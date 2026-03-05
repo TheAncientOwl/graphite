@@ -1,0 +1,26 @@
+/// --------------------------------------------------------------------------
+///                     Copyright (c) by ImGui-Lab 2026
+/// --------------------------------------------------------------------------
+/// @license https://github.com/TheAncientOwl/imgui-lab/blob/main/LICENSE
+///
+/// @file Renderer.cpp
+/// @author Alexandru Delegeanu
+/// @version 0.1
+/// @brief Implementation of @see Renderer.hpp::CreateRenderer.
+///
+
+#ifdef GRAPHITE_USE_VULKAN_API
+#include <memory>
+
+#include "Renderer.hpp"
+#include "core/renderer/backends/vulkan/VulkanRenderer.hpp"
+
+namespace Graphite::Core::Renderer {
+
+std::unique_ptr<IRenderer> CreateRenderer()
+{
+    return std::make_unique<Backends::Vulkan::VulkanRenderer>();
+}
+} // namespace Graphite::Core::Renderer
+
+#endif
