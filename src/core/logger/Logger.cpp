@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -20,14 +20,14 @@ namespace Graphite::Core::Logger {
 
 inline std::string_view getLogColor(LogLevel level) noexcept
 {
-    static constexpr auto reset = "\033[0m";
+    static constexpr auto reset = "\033[97m";
     static constexpr auto trace = "\033[97m";
     static constexpr auto info = "\033[34m";
     static constexpr auto warn = "\033[33m";
     static constexpr auto error = "\033[31m";
     static constexpr auto critical = "\033[91m";
     static constexpr auto debug = "\033[92m";
-    static constexpr auto scope = "\033[95m";
+    static constexpr auto scope = "\033[90m";
 
     switch (level)
     {
@@ -148,6 +148,56 @@ void Logger::processQueue()
     }
 }
 
+void formatMessageScope(std::ostringstream& oss, std::string_view const& scope, std::string_view color)
+{
+    if (scope.empty())
+        return;
+
+    std::string_view name = scope;
+
+    auto space = name.find(' ');
+    if (space != std::string_view::npos)
+    {
+        auto possibleName = name.substr(space + 1);
+
+        // only strip if it looks like a function
+        if (possibleName.find('(') != std::string_view::npos)
+            name = possibleName;
+    }
+
+    // Find first namespace/class scope
+    auto firstScope = name.find("::");
+    if (firstScope != std::string_view::npos)
+    {
+        // Remove return type / qualifiers before it
+        auto space = name.rfind(' ', firstScope);
+        if (space != std::string_view::npos)
+            name.remove_prefix(space + 1);
+    }
+
+    // Remove parameter list
+    auto openParen = name.find('(');
+    if (openParen != std::string_view::npos)
+        name = name.substr(0, openParen);
+
+    static constexpr auto gray = "\033[90m";
+
+    size_t start = 0;
+    while (true)
+    {
+        auto pos = name.find("::", start);
+        if (pos == std::string_view::npos)
+        {
+            oss << color << name.substr(start);
+            break;
+        }
+
+        oss << color << name.substr(start, pos - start);
+        oss << gray << "::";
+        start = pos + 2;
+    }
+}
+
 void Logger::printMessage(const LogMessage& msg)
 {
     // Format: | HH:MM:SS:ms:ns | LEVEL | Scope::Subscope: Message
@@ -168,7 +218,7 @@ void Logger::printMessage(const LogMessage& msg)
     auto const ns = static_cast<int>(nanoseconds.count());
 
     auto const levelColor = getLogColor(msg.level);
-    auto const reset = "\033[0m";
+    auto const reset = "\033[97m";
     auto const sepColor = getSeparatorColor();
 
     std::ostringstream oss;
@@ -179,9 +229,11 @@ void Logger::printMessage(const LogMessage& msg)
         << sepColor << " | " 
         << levelColor << std::setw(8) << std::setfill(' ') << std::right << getLogLevelName(msg.level)
         << sepColor << " | "
-        << levelColor << msg.scope 
-        << sepColor << " | "
-        << reset << msg.message << "\n";
+        << levelColor;
+
+    formatMessageScope(oss, msg.scope, levelColor);
+
+    oss << sepColor << " » " << reset << msg.message << "\n";
     // clang-format on
 
     {
@@ -216,7 +268,7 @@ ScopeLogger::~ScopeLogger()
 
     static constexpr auto red = "\033[91m";
     static constexpr auto gray = "\033[90m";
-    static constexpr auto reset = "\033[0m";
+    static constexpr auto reset = "\033[97m";
 
     std::ostringstream oss;
     oss << std::setfill('0');
