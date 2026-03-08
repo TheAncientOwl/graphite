@@ -16,13 +16,13 @@
 #include "core/logger/Logger.hpp"
 #include "core/renderer/Renderer.hpp"
 
-#include "demo/DemoAppV1.hpp"
+#include "demo/calculator/CalculatorApp.hpp"
 
 int main()
 {
     LOG_SCOPE("");
 
-    auto app = std::make_shared<Graphite::Demo::DemoAppV1>();
+    auto app = std::make_shared<Graphite::Demo::Calculator::CalculatorApp>();
 
     auto renderer = Graphite::Core::Renderer::CreateRenderer();
     renderer->Init();
