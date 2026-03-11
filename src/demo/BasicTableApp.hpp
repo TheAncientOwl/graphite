@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.10
+/// @version 0.11
 /// @brief Playground.
 ///
 
@@ -545,7 +545,7 @@ private: // Utils
         {
             LOG_INFO("Initial app run, setting dummy data");
             m_state.save_players_data = true;
-            static constexpr std::size_t default_players = 1000000;
+            static constexpr std::size_t default_players = 2000000;
 
             std::mt19937 rng{std::random_device{}()};
             std::uniform_int_distribution<int> health_dist(0, 100);
