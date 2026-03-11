@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.8
+/// @version 0.9
 /// @brief Playground.
 ///
 
@@ -45,6 +45,7 @@ public:
 public:
     void Render() override
     {
+        LOG_SCOPE("");
         RenderMenuBar();
 
         ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
@@ -80,65 +81,75 @@ private: // UI
     void RenderPlayersSelect()
     {
         ImGui::BeginChild("LeftSidebar", ImVec2(80, 0), ImGuiChildFlags_Borders);
-        for (std::size_t player_index = 0; player_index < m_state.players.size(); player_index++)
+
+        ImGuiListClipper clipper{};
+        clipper.Begin(static_cast<int>(m_state.sorted_players_indices.size()));
+
+        while (clipper.Step())
         {
-            if (!IsRenderable(m_state.players[player_index]))
+            // for (std::size_t player_index = 0; player_index < m_state.players.size(); player_index++)
+            LOG_INFO("Rendering from {} to {}", clipper.DisplayStart, clipper.DisplayEnd);
+            for (auto player_index = clipper.DisplayStart; player_index < clipper.DisplayEnd;
+                 ++player_index)
             {
-                continue;
-            }
-
-            ImGui::PushID(player_index);
-            if (ImGui::Selectable(m_state.players[player_index].name.c_str()) &&
-                (!static_cast<bool>(m_state.selected_player) ||
-                 (static_cast<bool>(m_state.selected_player) &&
-                  *m_state.selected_player != player_index)))
-            {
-                SetEditPlayer(player_index);
-            }
-            ImGui::PopID();
-
-            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-            {
-                // 1. Attach the payload identifier ("DND_PLAYER") and data
-                ImGui::SetDragDropPayload("DND_PLAYER", &player_index, sizeof(std::size_t));
-
-                // 2. Display a helpful tooltip while dragging
-                ImGui::Text("%s", m_state.players[player_index].name.c_str());
-
-                ImGui::EndDragDropSource();
-            }
-
-            if (ImGui::BeginDragDropTarget())
-            {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_PLAYER"))
+                if (!IsRenderable(m_state.players[player_index]))
                 {
-                    LOG_SCOPE("Move player with D&D");
-                    auto const source_display_idx = *(const std::size_t*)payload->Data;
-                    auto const target_display_idx = player_index;
-                    LOG_INFO(
-                        "Move player: {} before player {}",
-                        m_state.players[source_display_idx].name,
-                        m_state.players[target_display_idx].name);
-
-                    if (source_display_idx != target_display_idx)
-                    {
-                        // 1. Move the Player object in the raw vector
-                        auto moved_player = std::move(m_state.players[source_display_idx]);
-                        m_state.players.erase(m_state.players.begin() + source_display_idx);
-                        m_state.players.insert(
-                            m_state.players.begin() + target_display_idx, std::move(moved_player));
-
-                        // 2. Reset indices to match the new physical order (0, 1, 2...)
-                        std::iota(
-                            m_state.sorted_players_indices.begin(),
-                            m_state.sorted_players_indices.end(),
-                            0);
-
-                        m_state.save_players_data = true;
-                        m_state.reorder_players_data = true;
-                    }
+                    continue;
                 }
-                ImGui::EndDragDropTarget();
+
+                ImGui::PushID(player_index);
+                if (ImGui::Selectable(m_state.players[player_index].name.c_str()) &&
+                    (!static_cast<bool>(m_state.selected_player) ||
+                     (static_cast<bool>(m_state.selected_player) &&
+                      *m_state.selected_player != player_index)))
+                {
+                    SetEditPlayer(player_index);
+                }
+                ImGui::PopID();
+
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+                {
+                    // 1. Attach the payload identifier ("DND_PLAYER") and data
+                    ImGui::SetDragDropPayload("DND_PLAYER", &player_index, sizeof(std::size_t));
+
+                    // 2. Display a helpful tooltip while dragging
+                    ImGui::Text("%s", m_state.players[player_index].name.c_str());
+
+                    ImGui::EndDragDropSource();
+                }
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_PLAYER"))
+                    {
+                        LOG_SCOPE("Move player with D&D");
+                        auto const source_display_idx = *(const std::size_t*)payload->Data;
+                        auto const target_display_idx = player_index;
+                        LOG_INFO(
+                            "Move player: {} before player {}",
+                            m_state.players[source_display_idx].name,
+                            m_state.players[target_display_idx].name);
+
+                        if (source_display_idx != target_display_idx)
+                        {
+                            // 1. Move the Player object in the raw vector
+                            auto moved_player = std::move(m_state.players[source_display_idx]);
+                            m_state.players.erase(m_state.players.begin() + source_display_idx);
+                            m_state.players.insert(
+                                m_state.players.begin() + target_display_idx, std::move(moved_player));
+
+                            // 2. Reset indices to match the new physical order (0, 1, 2...)
+                            std::iota(
+                                m_state.sorted_players_indices.begin(),
+                                m_state.sorted_players_indices.end(),
+                                0);
+
+                            m_state.save_players_data = true;
+                            m_state.reorder_players_data = true;
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
             }
         }
 
@@ -203,87 +214,101 @@ private: // UI
 
             // 3. Populate Rows
             std::unordered_set<std::size_t> banned_indices{};
-            for (auto player_index : m_state.sorted_players_indices)
+
+            ImGuiListClipper clipper{};
+            clipper.Begin(static_cast<int>(m_state.sorted_players_indices.size()));
+
+            while (clipper.Step())
             {
-                auto& player = m_state.players[player_index];
+                LOG_INFO("Rendering from {} to {}", clipper.DisplayStart, clipper.DisplayEnd);
 
-                if (!IsRenderable(player))
+                // for (auto player_index : m_state.sorted_players_indices)
+                for (auto player_index = clipper.DisplayStart; player_index < clipper.DisplayEnd;
+                     ++player_index)
                 {
-                    continue;
-                }
+                    auto& player = m_state.players[player_index];
 
-                ImGui::TableNextRow();
-
-                // Column 0: Name
-                ImGui::TableSetColumnIndex(0);
-                ImGui::Text("%s", player.name.c_str());
-
-                // Column 1: Health
-                ImGui::TableSetColumnIndex(1);
-                ImGui::Text("%d HP", player.health);
-
-                ImGui::PushID(player_index); // Important for button uniqueness!
-                // Column 2: Action [-]
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.0f, 0.0f, 0.0f, 1.0f}); // text color
-
-                ImGui::TableSetColumnIndex(2);
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.45f, 0.0f, 1.0f});
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.8f, 0.45f, 0.0f, 1.0f});
-                if (ImGui::Button("Kick"))
-                {
-                    m_state.save_players_data = true;
-                    player.health -= 5;
-                    if (player.health < 0)
+                    if (!IsRenderable(player))
                     {
-                        player.health = 0;
-                        LOG_WARN("Can't take kicks OMG HE'S 0 HP!!!!");
+                        continue;
                     }
-                    else
+
+                    ImGui::TableNextRow();
+
+                    // Column 0: Name
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text("%s", player.name.c_str());
+
+                    // Column 1: Health
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%d HP", player.health);
+
+                    ImGui::PushID(player_index); // Important for button uniqueness!
+                    // Column 2: Action [-]
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.0f, 0.0f, 0.0f, 1.0f}); // text color
+
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.45f, 0.0f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.8f, 0.45f, 0.0f, 1.0f});
+                    if (ImGui::Button("Kick"))
                     {
-                        LOG_INFO("Kick {}! -5hp", player.name);
+                        m_state.save_players_data = true;
+                        player.health -= 5;
+                        if (player.health < 0)
+                        {
+                            player.health = 0;
+                            LOG_WARN("Can't take kicks OMG HE'S 0 HP!!!!");
+                        }
+                        else
+                        {
+                            LOG_INFO("Kick {}! -5hp", player.name);
+                        }
+                        m_state.reorder_players_data = true;
                     }
-                    m_state.reorder_players_data = true;
-                }
-                ImGui::PopStyleColor(2); // kick button
+                    ImGui::PopStyleColor(2); // kick button
 
-                // Column 3: Action [+]
-                ImGui::TableSetColumnIndex(3);
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.25f, 1.0f, 0.45f, 1.0f});
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.75f, 1.0f, 0.0f, 1.0f});
-                if (ImGui::Button("Heal"))
-                {
-                    m_state.save_players_data = true;
-                    player.health += 5;
-                    if (player.health > 100)
+                    // Column 3: Action [+]
+                    ImGui::TableSetColumnIndex(3);
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.25f, 1.0f, 0.45f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.75f, 1.0f, 0.0f, 1.0f});
+                    if (ImGui::Button("Heal"))
                     {
-                        player.health = 100;
-                        LOG_WARN("Can't be healed no more OMG HE'S 100 HP!!!!");
+                        m_state.save_players_data = true;
+                        player.health += 5;
+                        if (player.health > 100)
+                        {
+                            player.health = 100;
+                            LOG_WARN("Can't be healed no more OMG HE'S 100 HP!!!!");
+                        }
+                        else
+                        {
+                            LOG_INFO("Heal {}! +5hp", player.name);
+                        }
+                        m_state.reorder_players_data = true;
                     }
-                    else
+                    ImGui::PopStyleColor(2); // heal button
+
+                    // Column 4: Action [x]
+                    ImGui::TableSetColumnIndex(4);
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.25f, 0.45f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.0f, 0.75f, 0.0f, 1.0f});
+                    if (ImGui::Button("Ban"))
                     {
-                        LOG_INFO("Heal {}! +5hp", player.name);
+                        m_state.save_players_data = true;
+                        LOG_INFO(
+                            "Shallow Banned player {}::{}",
+                            player_index,
+                            m_state.players[player_index].name);
+                        m_state.players[player_index].banned = true;
                     }
-                    m_state.reorder_players_data = true;
+                    ImGui::PopStyleColor(2); // ban button
+
+                    ImGui::PopStyleColor(1); // text color
+
+                    ImGui::PopID();
                 }
-                ImGui::PopStyleColor(2); // heal button
-
-                // Column 4: Action [x]
-                ImGui::TableSetColumnIndex(4);
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.25f, 0.45f, 1.0f});
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.0f, 0.75f, 0.0f, 1.0f});
-                if (ImGui::Button("Ban"))
-                {
-                    m_state.save_players_data = true;
-                    LOG_INFO(
-                        "Shallow Banned player {}::{}", player_index, m_state.players[player_index].name);
-                    m_state.players[player_index].banned = true;
-                }
-                ImGui::PopStyleColor(2); // ban button
-
-                ImGui::PopStyleColor(1); // text color
-
-                ImGui::PopID();
             }
+
             ImGui::EndTable();
         }
         ImGui::EndChild();
@@ -504,7 +529,7 @@ private: // Utils
         {
             LOG_INFO("Initial app run, setting dummy data");
             m_state.save_players_data = true;
-            static constexpr std::size_t default_players = 10000;
+            static constexpr std::size_t default_players = 1000000;
 
             std::mt19937 rng{std::random_device{}()};
             std::uniform_int_distribution<int> health_dist(0, 100);
