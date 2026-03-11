@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.6
+/// @version 0.7
 /// @brief Playground.
 ///
 
@@ -14,6 +14,7 @@
 #include <fstream>
 #include <numeric>
 #include <optional>
+#include <random>
 #include <ranges>
 #include <string>
 #include <unordered_set>
@@ -499,18 +500,22 @@ private: // Utils
         {
             LOG_INFO("Initial app run, setting dummy data");
             m_state.save_players_data = true;
-            m_state.players = {
-                {"Player1", 75},
-                {"Player2", 45},
-                {"Player3", 100},
-                {"Player4", 75},
-                {"Player5", 23},
-                {"Player6", 95},
-                {"Player7", 73},
-                {"Player8", 47},
-                {"Player9", 29},
-            };
-            m_state.sorted_players_indices = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+            static constexpr std::size_t default_players = 10000;
+
+            std::mt19937 rng{std::random_device{}()};
+            std::uniform_int_distribution<int> health_dist(0, 100);
+
+            m_state.players.reserve(default_players);
+            m_state.sorted_players_indices.reserve(default_players);
+
+            for (std::size_t i = 0; i < default_players; ++i)
+            {
+                std::string name = "Player" + std::to_string(i + 1);
+                int health = health_dist(rng);
+
+                m_state.players.emplace_back(name, health);
+                m_state.sorted_players_indices.push_back(i);
+            }
             return;
         }
 
