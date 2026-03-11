@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.9
+/// @version 0.10
 /// @brief Playground.
 ///
 
@@ -379,6 +379,22 @@ private: // UI
                 ImGui::MenuItem("Show Player List", nullptr, &m_state.show_players);
                 ImGui::EndMenu();
             }
+
+            // --- Right Side Stats ---
+            // 1. Calculate how much space the FPS text will take
+            float fps = ImGui::GetIO().Framerate;
+            char fps_text[32];
+            snprintf(fps_text, sizeof(fps_text), "%.1f FPS", fps);
+
+            float text_width = ImGui::CalcTextSize(fps_text).x;
+
+            // 2. Set the cursor to the far right (minus the text width and some padding)
+            ImGui::SetCursorPosX(
+                ImGui::GetWindowWidth() - text_width - ImGui::GetStyle().ItemSpacing.x);
+
+            // 3. Display it (use a color to make it stand out, maybe your leafGreen?)
+            ImGui::TextColored(ImVec4(0.15f, 0.55f, 0.38f, 1.00f), "%s", fps_text);
+
             ImGui::EndMainMenuBar();
         }
     }
