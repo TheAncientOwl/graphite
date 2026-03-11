@@ -5,13 +5,14 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Playground.
 ///
 
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <numeric>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -77,20 +78,20 @@ private: // UI
     void RenderPlayersSelect()
     {
         ImGui::BeginChild("LeftSidebar", ImVec2(80, 0), ImGuiChildFlags_Borders);
-        for (std::size_t playerIndex = 0; playerIndex < m_state.players.size(); playerIndex++)
+        for (std::size_t player_index = 0; player_index < m_state.players.size(); player_index++)
         {
-            if (!IsRenderable(m_state.players[playerIndex]))
+            if (!IsRenderable(m_state.players[player_index]))
             {
                 continue;
             }
 
-            ImGui::PushID(playerIndex);
-            if (ImGui::Selectable(m_state.players[playerIndex].name.c_str()) &&
+            ImGui::PushID(player_index);
+            if (ImGui::Selectable(m_state.players[player_index].name.c_str()) &&
                 (!static_cast<bool>(m_state.selected_player) ||
                  (static_cast<bool>(m_state.selected_player) &&
-                  *m_state.selected_player != playerIndex)))
+                  *m_state.selected_player != player_index)))
             {
-                SetEditPlayer(playerIndex);
+                SetEditPlayer(player_index);
             }
             ImGui::PopID();
         }
@@ -101,21 +102,59 @@ private: // UI
     {
         // 1. Setup the table (3 columns)
         ImGui::BeginChild("TableRegion");
-        if (ImGui::BeginTable("PlayerTable", 5, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+        if (ImGui::BeginTable(
+                "PlayerTable",
+                5,
+                ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable))
         {
             // 2. Setup Headers
-            ImGui::TableSetupColumn("Name");
-            ImGui::TableSetupColumn("Health");
+            ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort);
+            ImGui::TableSetupColumn("Health", ImGuiTableColumnFlags_DefaultSort);
             ImGui::TableSetupColumn("Action [-]");
             ImGui::TableSetupColumn("Action [+]");
             ImGui::TableSetupColumn("Action [x]");
             ImGui::TableHeadersRow();
 
+            if (auto specs = ImGui::TableGetSortSpecs();
+                m_state.reorder_players_data || specs->SpecsDirty)
+            {
+                LOG_SCOPE("Sorting data");
+                const ImGuiTableColumnSortSpecs* sort_spec = &specs->Specs[0];
+
+                std::sort(
+                    m_state.sorted_players_indices.begin(),
+                    m_state.sorted_players_indices.end(),
+                    [&](std::size_t const a, std::size_t const b) {
+                        const auto& player1 = m_state.players[a];
+                        const auto& player2 = m_state.players[b];
+                        bool res = false;
+
+                        switch (sort_spec->ColumnIndex)
+                        {
+                        case 0: {
+                            auto const cmp = player1.name < player2.name;
+                            res = (player1.name != player2.name) ? cmp : a < b;
+                            break;
+                        }
+                        case 1: {
+                            res = (player1.health != player2.health) ? player1.health < player2.health
+                                                                     : a < b;
+                            break;
+                        }
+                        }
+
+                        return (sort_spec->SortDirection == ImGuiSortDirection_Ascending) ? res : !res;
+                    });
+
+                specs->SpecsDirty = false;
+                m_state.reorder_players_data = false;
+            }
+
             // 3. Populate Rows
             std::unordered_set<std::size_t> banned_indices{};
-            for (std::size_t playerIndex = 0; playerIndex < m_state.players.size(); playerIndex++)
+            for (auto player_index : m_state.sorted_players_indices)
             {
-                auto& player = m_state.players[playerIndex];
+                auto& player = m_state.players[player_index];
 
                 if (!IsRenderable(player))
                 {
@@ -132,7 +171,7 @@ private: // UI
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%d HP", player.health);
 
-                ImGui::PushID(playerIndex); // Important for button uniqueness!
+                ImGui::PushID(player_index); // Important for button uniqueness!
                 // Column 2: Action [-]
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.0f, 0.0f, 0.0f, 1.0f}); // text color
 
@@ -152,6 +191,7 @@ private: // UI
                     {
                         LOG_INFO("Kick {}! -5hp", player.name);
                     }
+                    m_state.reorder_players_data = true;
                 }
                 ImGui::PopStyleColor(2); // kick button
 
@@ -172,6 +212,7 @@ private: // UI
                     {
                         LOG_INFO("Heal {}! +5hp", player.name);
                     }
+                    m_state.reorder_players_data = true;
                 }
                 ImGui::PopStyleColor(2); // heal button
 
@@ -183,8 +224,8 @@ private: // UI
                 {
                     m_state.save_players_data = true;
                     LOG_INFO(
-                        "Shallow Banned player {}::{}", playerIndex, m_state.players[playerIndex].name);
-                    m_state.players[playerIndex].banned = true;
+                        "Shallow Banned player {}::{}", player_index, m_state.players[player_index].name);
+                    m_state.players[player_index].banned = true;
                 }
                 ImGui::PopStyleColor(2); // ban button
 
@@ -212,6 +253,7 @@ private: // UI
                 "Saving player name -> prev{} -> now{}", m_state.players[idx].name, m_state.edits.buffer);
             m_state.players[idx].name = m_state.edits.buffer;
             m_state.save_players_data = true;
+            m_state.reorder_players_data = true;
         }
 
         ImGui::SliderInt("Health", &m_state.edits.health, 0, 100);
@@ -223,6 +265,7 @@ private: // UI
                 m_state.edits.health);
             m_state.players[idx].health = m_state.edits.health;
             m_state.save_players_data = true;
+            m_state.reorder_players_data = true;
         }
 
         if (ImGui::Button("Done"))
@@ -243,7 +286,9 @@ private: // UI
                 if (ImGui::MenuItem("New Player", "Ctrl+N"))
                 {
                     m_state.players.emplace_back("Dummy", 0);
+                    m_state.sorted_players_indices.push_back(m_state.players.size() - 1);
                     m_state.save_players_data = true;
+                    m_state.reorder_players_data = true;
                     SetEditPlayer(m_state.players.size() - 1);
                 }
                 ImGui::Separator();
@@ -278,7 +323,7 @@ private: // UI
         }
     }
 
-private:
+private: // Player data structure
     struct Player
     {
         std::string name{""};
@@ -343,7 +388,16 @@ private: // Utils
                 [](Player const& p) { return p.banned; }),
             m_state.players.end());
 
-        m_state.save_players_data |= m_state.players.size() != initial_size;
+        bool const data_changed{m_state.players.size() != initial_size};
+
+        m_state.save_players_data |= data_changed;
+
+        if (data_changed)
+        {
+            m_state.sorted_players_indices.resize(m_state.players.size());
+            std::iota(m_state.sorted_players_indices.begin(), m_state.sorted_players_indices.end(), 0);
+            m_state.reorder_players_data = true;
+        }
     }
 
     void SetEditPlayer(std::size_t const index)
@@ -410,6 +464,7 @@ private: // Utils
                 {"Player8", 47},
                 {"Player9", 29},
             };
+            m_state.sorted_players_indices = {0, 1, 2, 3, 4, 5, 6, 7, 8};
             return;
         }
 
@@ -423,9 +478,10 @@ private: // Utils
         LOG_INFO("Players count to load: {}", players_count);
         m_state.players.reserve(players_count);
 
-        for (auto _ : std::ranges::iota_view(std::size_t{0}, players_count))
+        for (auto const player_index : std::ranges::iota_view(std::size_t{0}, players_count))
         {
             m_state.players.emplace_back(file);
+            m_state.sorted_players_indices.push_back(player_index);
         }
     }
 
@@ -443,9 +499,11 @@ private: // Data Structures
             std::size_t length{0};
         } filter{};
         bool save_players_data{false};
+        bool reorder_players_data{false};
         bool show_players{true};
         std::optional<std::size_t> selected_player{std::nullopt};
         std::vector<Player> players{};
+        std::vector<std::size_t> sorted_players_indices{};
     };
 
 private: // Fields
