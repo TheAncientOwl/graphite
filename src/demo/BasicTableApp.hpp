@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.4
+/// @version 0.5
 /// @brief Playground.
 ///
 
@@ -36,6 +36,7 @@ public:
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        ApplyTheme();
     }
 
     ~BasicTableApp() { SavePlayers(); }
@@ -528,6 +529,52 @@ private: // Utils
             m_state.players.emplace_back(file);
             m_state.sorted_players_indices.push_back(player_index);
         }
+    }
+
+    void ApplyTheme()
+    {
+        // >> Spacings
+        ImGuiStyle& style = ImGui::GetStyle();
+
+        // Soften the corners (Modern look)
+        style.WindowRounding = 8.0f;
+        style.FrameRounding = 6.0f;
+        style.PopupRounding = 6.0f;
+        style.GrabRounding = 6.0f;
+        style.TabRounding = 4.0f;
+
+        // Add some breathing room
+        style.WindowPadding = ImVec2(12.0f, 12.0f);
+        style.FramePadding = ImVec2(8.0f, 4.0f);
+        style.ItemSpacing = ImVec2(8.0f, 8.0f);
+
+        // Make borders subtle
+        style.WindowBorderSize = 1.0f;
+        style.FrameBorderSize = 1.0f;
+
+        // >> Colors
+        ImGui::StyleColorsDark(); // Start with default dark theme
+        ImVec4* colors = ImGui::GetStyle().Colors;
+
+        // Darken the background
+        colors[ImGuiCol_WindowBg] = ImVec4(0.10f, 0.10f, 0.12f, 1.0f);
+        colors[ImGuiCol_ChildBg] = ImVec4(0.12f, 0.12f, 0.14f, 1.0f);
+
+        // Change the primary accent color (e.g., a nice graphite/blue)
+        colors[ImGuiCol_Header] = ImVec4(0.20f, 0.25f, 0.30f, 1.0f);
+        colors[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.30f, 0.35f, 1.0f);
+        colors[ImGuiCol_HeaderActive] = ImVec4(0.30f, 0.35f, 0.40f, 1.0f);
+
+        // Base button colors
+        colors[ImGuiCol_Button] = ImVec4(0.20f, 0.22f, 0.25f, 1.0f);
+        colors[ImGuiCol_ButtonHovered] = ImVec4(0.25f, 0.28f, 0.32f, 1.0f);
+        colors[ImGuiCol_ButtonActive] = ImVec4(0.30f, 0.35f, 0.40f, 1.0f);
+
+        // Frames (InputText, etc)
+        colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.15f, 0.17f, 1.0f);
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto_Condensed-Medium.ttf", 15.0f);
     }
 
 private: // Data Structures
