@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.7
+/// @version 0.8
 /// @brief Playground.
 ///
 
@@ -152,8 +152,12 @@ private: // UI
         if (ImGui::BeginTable(
                 "PlayerTable",
                 5,
-                ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable))
+                ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
+                    ImGuiTableFlags_ScrollY,
+                ImVec2(0.0f, 0.0f)))
         {
+            ImGui::TableSetupScrollFreeze(1, 1);
+
             // 2. Setup Headers
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort);
             ImGui::TableSetupColumn("Health", ImGuiTableColumnFlags_DefaultSort);
