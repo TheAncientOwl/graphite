@@ -60,7 +60,7 @@ void MetalRenderer::Init()
         ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     m_state->window = glfwCreateWindow(
-        (int)(1280 * main_scale), (int)(800 * main_scale), "Dear ImGui GLFW+Metal example", nullptr, nullptr);
+        (int)(500 * main_scale), (int)(550 * main_scale), "Dear ImGui GLFW+Metal example", nullptr, nullptr);
     if (m_state->window == nullptr)
         std::terminate();
 
