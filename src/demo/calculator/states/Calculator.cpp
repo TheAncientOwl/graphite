@@ -264,6 +264,10 @@ void DrawCalculator(CalculatorState& state)
         display_equation.size,
         ImGuiInputTextFlags_ReadOnly);
 
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.25f, 1.0f, 0.45f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.75f, 1.0f, 0.0f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.0f, 0.0f, 0.0f, 1.0f});
+
     DrawButton("<", [&equation = state.equation]() {
         if (!equation.empty())
         {
@@ -331,6 +335,8 @@ void DrawCalculator(CalculatorState& state)
     DrawButton("]", [&equation = state.equation]() { equation.push_back(']'); });
     ImGui::SameLine();
     DrawButton("}", [&equation = state.equation]() { equation.push_back('}'); });
+
+    ImGui::PopStyleColor(3);
 
     ImGui::End();
 }
