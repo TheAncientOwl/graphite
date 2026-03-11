@@ -5,12 +5,16 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Playground.
 ///
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <optional>
+#include <ranges>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -26,10 +30,14 @@ class BasicTableApp : public Graphite::Core::Renderer::IRenderable
 public:
     BasicTableApp()
     {
+        LoadPlayers();
+
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     }
+
+    ~BasicTableApp() { SavePlayers(); }
 
 public:
     void Render() override
@@ -62,43 +70,10 @@ public:
         ImGui::End();
 
         CleanupBanned();
+        SavePlayers();
     }
 
 private: // UI
-    void CleanupBanned()
-    {
-        // 1. If we have a selection, calculate the new index
-        if (m_state.selected_player.has_value())
-        {
-            std::size_t old_idx = *m_state.selected_player;
-            std::size_t offset = 0;
-
-            for (std::size_t i = 0; i < old_idx; ++i)
-            {
-                if (m_state.players[i].banned)
-                    offset++;
-            }
-
-            // 2. If the selected player themselves is banned, clear the selection
-            if (m_state.players[old_idx].banned)
-            {
-                m_state.selected_player = std::nullopt;
-            }
-            else
-            {
-                *m_state.selected_player -= offset;
-            }
-        }
-
-        // 3. Actually remove the players from the vector
-        m_state.players.erase(
-            std::remove_if(
-                m_state.players.begin(),
-                m_state.players.end(),
-                [](Player const& p) { return p.banned; }),
-            m_state.players.end());
-    }
-
     void RenderPlayersSelect()
     {
         ImGui::BeginChild("LeftSidebar", ImVec2(80, 0), ImGuiChildFlags_Borders);
@@ -166,6 +141,7 @@ private: // UI
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.8f, 0.45f, 0.0f, 1.0f});
                 if (ImGui::Button("Kick"))
                 {
+                    m_state.save_players_data = true;
                     player.health -= 5;
                     if (player.health < 0)
                     {
@@ -185,6 +161,7 @@ private: // UI
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.75f, 1.0f, 0.0f, 1.0f});
                 if (ImGui::Button("Heal"))
                 {
+                    m_state.save_players_data = true;
                     player.health += 5;
                     if (player.health > 100)
                     {
@@ -204,6 +181,7 @@ private: // UI
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.0f, 0.75f, 0.0f, 1.0f});
                 if (ImGui::Button("Ban"))
                 {
+                    m_state.save_players_data = true;
                     LOG_INFO(
                         "Shallow Banned player {}::{}", playerIndex, m_state.players[playerIndex].name);
                     m_state.players[playerIndex].banned = true;
@@ -233,6 +211,7 @@ private: // UI
             LOG_INFO(
                 "Saving player name -> prev{} -> now{}", m_state.players[idx].name, m_state.edits.buffer);
             m_state.players[idx].name = m_state.edits.buffer;
+            m_state.save_players_data = true;
         }
 
         ImGui::SliderInt("Health", &m_state.edits.health, 0, 100);
@@ -243,6 +222,7 @@ private: // UI
                 m_state.players[idx].health,
                 m_state.edits.health);
             m_state.players[idx].health = m_state.edits.health;
+            m_state.save_players_data = true;
         }
 
         if (ImGui::Button("Done"))
@@ -263,6 +243,7 @@ private: // UI
                 if (ImGui::MenuItem("New Player", "Ctrl+N"))
                 {
                     m_state.players.emplace_back("Dummy", 0);
+                    m_state.save_players_data = true;
                     SetEditPlayer(m_state.players.size() - 1);
                 }
                 ImGui::Separator();
@@ -303,9 +284,68 @@ private:
         std::string name{""};
         int health{0};
         bool banned{false};
+
+        Player() = default;
+        Player(std::string name, int const health)
+            : name{std::move(name)}, health{health}, banned{false}
+        {
+        }
+        Player(std::istream& is) { is >> *this; }
+
+        friend std::ostream& operator<<(std::ostream& os, Player const& player)
+        {
+            return os << player.name << '\n' << player.health << '\n';
+        }
+
+        friend std::istream& operator>>(std::istream& is, Player& player)
+        {
+            player.banned = false;
+
+            std::getline(is, player.name);
+            is >> player.health;
+            is.get(); // read newline char
+            return is;
+        }
     };
 
 private: // Utils
+    void CleanupBanned()
+    {
+        auto const initial_size{m_state.players.size()};
+        // 1. If we have a selection, calculate the new index
+        if (m_state.selected_player.has_value())
+        {
+            std::size_t old_idx = *m_state.selected_player;
+            std::size_t offset = 0;
+
+            for (std::size_t i = 0; i < old_idx; ++i)
+            {
+                if (m_state.players[i].banned)
+                    offset++;
+            }
+
+            // 2. If the selected player themselves is banned, clear the selection
+            if (m_state.players[old_idx].banned)
+            {
+                m_state.selected_player = std::nullopt;
+            }
+            else
+            {
+                *m_state.selected_player -= offset;
+            }
+        }
+
+        // 3. Actually remove the players from the vector
+        m_state.players.erase(
+            std::remove_if(
+                m_state.players.begin(),
+                m_state.players.end(),
+                [](Player const& p) { return p.banned; }),
+            m_state.players.end());
+
+        m_state.save_players_data |= m_state.players.size() != initial_size;
+    }
+
     void SetEditPlayer(std::size_t const index)
     {
         m_state.selected_player = index;
@@ -326,6 +366,69 @@ private: // Utils
         return !player.banned && NameMatchesSearch(player.name);
     }
 
+    static inline constexpr std::filesystem::path getPlayersDataPath()
+    {
+        return std::filesystem::current_path() / "players.txt";
+    }
+
+    void SavePlayers()
+    {
+        if (!m_state.save_players_data)
+        {
+            return;
+        }
+        LOG_SCOPE("");
+
+        std::ofstream file{getPlayersDataPath(), std::ios::trunc};
+        LOG_INFO("Saving {} players", m_state.players.size());
+        file << m_state.players.size() << '\n';
+        std::for_each(m_state.players.begin(), m_state.players.end(), [&](Player const& player) {
+            file << player;
+        });
+
+        m_state.save_players_data = false;
+    }
+
+    void LoadPlayers()
+    {
+        LOG_SCOPE("");
+
+        auto const path{getPlayersDataPath()};
+
+        if (!std::filesystem::exists(path))
+        {
+            LOG_INFO("Initial app run, setting dummy data");
+            m_state.save_players_data = true;
+            m_state.players = {
+                {"Player1", 75},
+                {"Player2", 45},
+                {"Player3", 100},
+                {"Player4", 75},
+                {"Player5", 23},
+                {"Player6", 95},
+                {"Player7", 73},
+                {"Player8", 47},
+                {"Player9", 29},
+            };
+            return;
+        }
+
+        LOG_INFO("Loading players...");
+
+        std::ifstream file{path};
+
+        std::size_t players_count{0};
+        file >> players_count;
+        file.get(); // read newline char
+        LOG_INFO("Players count to load: {}", players_count);
+        m_state.players.reserve(players_count);
+
+        for (auto _ : std::ranges::iota_view(std::size_t{0}, players_count))
+        {
+            m_state.players.emplace_back(file);
+        }
+    }
+
 private: // Data Structures
     struct State
     {
@@ -339,19 +442,10 @@ private: // Data Structures
             char buffer[64];
             std::size_t length{0};
         } filter{};
+        bool save_players_data{false};
         bool show_players{true};
         std::optional<std::size_t> selected_player{std::nullopt};
-        std::vector<Player> players{
-            {"Player1", 75},
-            {"Player2", 45},
-            {"Player3", 100},
-            {"Player4", 75},
-            {"Player5", 23},
-            {"Player6", 95},
-            {"Player7", 73},
-            {"Player8", 47},
-            {"Player9", 29},
-        };
+        std::vector<Player> players{};
     };
 
 private: // Fields
