@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief Playground.
 ///
 
@@ -94,7 +94,52 @@ private: // UI
                 SetEditPlayer(player_index);
             }
             ImGui::PopID();
+
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+            {
+                // 1. Attach the payload identifier ("DND_PLAYER") and data
+                ImGui::SetDragDropPayload("DND_PLAYER", &player_index, sizeof(std::size_t));
+
+                // 2. Display a helpful tooltip while dragging
+                ImGui::Text("%s", m_state.players[player_index].name.c_str());
+
+                ImGui::EndDragDropSource();
+            }
+
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_PLAYER"))
+                {
+                    LOG_SCOPE("Move player with D&D");
+                    auto const source_display_idx = *(const std::size_t*)payload->Data;
+                    auto const target_display_idx = player_index;
+                    LOG_INFO(
+                        "Move player: {} before player {}",
+                        m_state.players[source_display_idx].name,
+                        m_state.players[target_display_idx].name);
+
+                    if (source_display_idx != target_display_idx)
+                    {
+                        // 1. Move the Player object in the raw vector
+                        auto moved_player = std::move(m_state.players[source_display_idx]);
+                        m_state.players.erase(m_state.players.begin() + source_display_idx);
+                        m_state.players.insert(
+                            m_state.players.begin() + target_display_idx, std::move(moved_player));
+
+                        // 2. Reset indices to match the new physical order (0, 1, 2...)
+                        std::iota(
+                            m_state.sorted_players_indices.begin(),
+                            m_state.sorted_players_indices.end(),
+                            0);
+
+                        m_state.save_players_data = true;
+                        m_state.reorder_players_data = true;
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
         }
+
         ImGui::EndChild();
     }
 
