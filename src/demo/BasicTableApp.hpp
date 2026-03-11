@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.5
+/// @version 0.6
 /// @brief Playground.
 ///
 
@@ -570,11 +570,63 @@ private: // Utils
         colors[ImGuiCol_ButtonHovered] = ImVec4(0.25f, 0.28f, 0.32f, 1.0f);
         colors[ImGuiCol_ButtonActive] = ImVec4(0.30f, 0.35f, 0.40f, 1.0f);
 
-        // Frames (InputText, etc)
+        // Frames(InputText, etc)
         colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.15f, 0.17f, 1.0f);
 
+        // >> Fonts
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("assets/fonts/Roboto_Condensed-Medium.ttf", 15.0f);
+
+        // >> Colors theme
+        ImGui::StyleColorsDark(); // Start with default dark theme
+        // ImVec4* colors = ImGui::GetStyle().Colors;
+
+        // --- The "Primary" Green Accents ---
+        const ImVec4 leafGreen = ImVec4(0.15f, 0.55f, 0.38f, 1.00f);
+        const ImVec4 leafGreenHovered = ImVec4(0.18f, 0.65f, 0.45f, 1.00f);
+        const ImVec4 leafGreenActive = ImVec4(0.20f, 0.75f, 0.50f, 1.00f);
+
+        // 1. Headers (Collapsing headers, Table headers)
+        colors[ImGuiCol_Header] = leafGreen;
+        colors[ImGuiCol_HeaderHovered] = leafGreenHovered;
+        colors[ImGuiCol_HeaderActive] = leafGreenActive;
+
+        // 2. Buttons (Default state)
+        colors[ImGuiCol_Button] = ImVec4(0.20f, 0.25f, 0.22f, 1.00f); // Dark mossy base
+        colors[ImGuiCol_ButtonHovered] = leafGreenHovered;
+        colors[ImGuiCol_ButtonActive] = leafGreenActive;
+
+        // 3. Selection & Checkmarks
+        colors[ImGuiCol_FrameBgActive] = leafGreen; // Input fields when clicked
+        colors[ImGuiCol_CheckMark] = leafGreenActive;
+        colors[ImGuiCol_SliderGrab] = leafGreen;
+        colors[ImGuiCol_SliderGrabActive] = leafGreenActive;
+
+        // 4. Tabs (For Docking)
+        colors[ImGuiCol_Tab] = ImVec4(0.10f, 0.18f, 0.14f, 1.00f);
+        colors[ImGuiCol_TabHovered] = leafGreenHovered;
+        colors[ImGuiCol_TabActive] = leafGreen;
+        colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.12f, 0.25f, 0.20f, 1.00f);
+
+        // 5. Window Titles (The "Blue" bar at the top of windows)
+        colors[ImGuiCol_TitleBgActive] = ImVec4(0.12f, 0.15f, 0.13f, 1.00f); // Subtle dark green-grey
+        colors[ImGuiCol_SeparatorHovered] = leafGreenHovered;
+        colors[ImGuiCol_SeparatorActive] = leafGreenActive;
+
+        // --- Input Widget Backgrounds ---
+        // The default state of the input box
+        colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.15f, 0.13f, 1.00f);
+        // When you hover over the input
+        colors[ImGuiCol_FrameBgHovered] = ImVec4(0.15f, 0.20f, 0.17f, 1.00f);
+        // When you click/type in the input
+        colors[ImGuiCol_FrameBgActive] = ImVec4(0.18f, 0.25f, 0.21f, 1.00f);
+
+        // --- Slider & Checkbox Specifics ---
+        // The "knob" on the slider
+        colors[ImGuiCol_SliderGrab] = ImVec4(0.15f, 0.55f, 0.38f, 1.00f);
+        colors[ImGuiCol_SliderGrabActive] = ImVec4(0.20f, 0.75f, 0.50f, 1.00f);
+        // The checkmark in a checkbox
+        colors[ImGuiCol_CheckMark] = ImVec4(0.20f, 0.75f, 0.50f, 1.00f);
     }
 
 private: // Data Structures

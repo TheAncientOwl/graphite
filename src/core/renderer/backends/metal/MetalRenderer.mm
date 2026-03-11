@@ -5,7 +5,7 @@
 ///
 /// @file MetalRenderer.mm
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Implementation of @see MetalRenderer.hpp.
 ///
 
@@ -73,7 +73,7 @@ void MetalRenderer::Init()
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
 
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsDark();
     // ImGui::StyleColorsLight();
 
     // Setup scaling
