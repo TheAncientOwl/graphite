@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -250,7 +250,7 @@ ScopeLogger::ScopeLogger(std::string_view const tag, std::string_view const scop
     static constexpr auto gray = "\033[90m";
 
     Logger::log(
-        LogLevel::Scope, m_scope, "{}[{}+{}]{} Begin {}{}", gray, green, gray, green, green, m_tag);
+        LogLevel::Scope, m_scope, "{}[{}+{}]{} Begin {}» {}{}", gray, green, gray, green, gray, green, m_tag);
 }
 
 ScopeLogger::~ScopeLogger()
@@ -319,7 +319,7 @@ ScopeLogger::~ScopeLogger()
     Logger::log(
         LogLevel::Scope,
         m_scope,
-        "{}[{}-{}]{} End {}{} {}~ elapsed {}",
+        "{}[{}-{}]{} End {}» {}{} ~ elapsed {}",
         gray,
         red,
         gray,
