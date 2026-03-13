@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.13
+/// @version 0.14
 /// @brief Playground.
 ///
 
@@ -164,7 +164,8 @@ private: // UI
                 "PlayerTable",
                 5,
                 ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Sortable |
-                    ImGuiTableFlags_ScrollY,
+                    ImGuiTableFlags_ScrollY | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
+                    ImGuiTableFlags_Reorderable,
                 ImVec2(0.0f, 0.0f)))
         {
             ImGui::TableSetupScrollFreeze(1, 1);
