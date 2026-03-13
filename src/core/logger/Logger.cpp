@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.4
+/// @version 0.5
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -116,7 +116,15 @@ Logger::~Logger()
         m_worker.join();
 }
 
-Logger::Logger() : m_running{true}, m_worker{&Logger::processQueue, this}
+std::filesystem::path Logger::GetLogFilePath()
+{
+    return std::filesystem::current_path() / "app.graphite.log";
+}
+
+Logger::Logger()
+    : m_running{true}
+    , m_worker{&Logger::processQueue, this}
+    , m_log_file{Logger::GetLogFilePath(), std::ios::trunc}
 {
 }
 
@@ -242,9 +250,11 @@ void Logger::printMessage(const LogMessage& msg)
     // clang-format on
 
     {
-        static std::mutex cout_mutex;
-        std::lock_guard<std::mutex> lock(cout_mutex);
-        std::cout << oss.str();
+        static std::mutex write_mutex;
+        std::lock_guard<std::mutex> lock(write_mutex);
+        auto const str{oss.str()};
+        std::cout << str;
+        m_log_file << str;
     }
 }
 

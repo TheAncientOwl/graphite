@@ -5,7 +5,7 @@
 ///
 /// @file Logger.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Logging utilities
 ///
 
@@ -14,7 +14,9 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <filesystem>
 #include <format>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <queue>
@@ -69,12 +71,15 @@ private:
 
     void printMessage(const LogMessage& msg);
 
+    static std::filesystem::path GetLogFilePath();
+
 private:
     std::queue<LogMessage> m_queue;
     std::mutex m_queue_mutex;
     std::condition_variable m_cv;
     std::atomic<bool> m_running;
     std::thread m_worker;
+    std::ofstream m_log_file;
 };
 
 class ScopeLogger
