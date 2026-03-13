@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.12
+/// @version 0.13
 /// @brief Playground.
 ///
 
@@ -294,6 +294,7 @@ private: // UI
                     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.0f, 0.75f, 0.0f, 1.0f});
                     if (ImGui::Button("Ban"))
                     {
+                        m_state.open_ban_modal = true;
                         m_state.target_ban_player = player_index;
                     }
                     ImGui::PopStyleColor(2); // ban button
@@ -308,8 +309,9 @@ private: // UI
         }
 
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-        if (static_cast<bool>(m_state.target_ban_player))
+        if (m_state.open_ban_modal)
         {
+            m_state.open_ban_modal = false;
             ImGui::OpenPopup("Confirm Ban?");
         }
         // This must use the EXACT same string ID as OpenPopup
@@ -742,6 +744,7 @@ private: // Data Structures
         bool show_players{true};
         std::optional<std::size_t> selected_player{std::nullopt};
         std::optional<std::size_t> target_ban_player{std::nullopt};
+        bool open_ban_modal{false};
         std::vector<Player> players{};
         std::vector<std::size_t> sorted_players_indices{};
     };
