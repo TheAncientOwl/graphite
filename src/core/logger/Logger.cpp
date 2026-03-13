@@ -10,6 +10,8 @@
 ///
 
 #include "Logger.hpp"
+#include "Ansi.hpp"
+#include "LogFormatter.hpp"
 
 #include <ctime>
 #include <iomanip>
@@ -17,96 +19,6 @@
 using namespace std::string_literals;
 
 namespace Graphite::Core::Logger {
-
-inline std::string_view getLogColor(LogLevel level) noexcept
-{
-    static constexpr auto reset = "\033[97m";
-    static constexpr auto trace = "\033[97m";
-    static constexpr auto info = "\033[34m";
-    static constexpr auto warn = "\033[33m";
-    static constexpr auto error = "\033[31m";
-    static constexpr auto critical = "\033[91m";
-    static constexpr auto debug = "\033[92m";
-    static constexpr auto scope = "\033[90m";
-
-    switch (level)
-    {
-    case LogLevel::Trace:
-        return trace;
-    case LogLevel::Info:
-        return info;
-    case LogLevel::Warn:
-        return warn;
-    case LogLevel::Error:
-        return error;
-    case LogLevel::Critical:
-        return critical;
-    case LogLevel::Debug:
-        return debug;
-    case LogLevel::Scope:
-        return scope;
-    default:
-        return reset;
-    }
-}
-
-static void writeWithoutAnsi(std::ostream& os, std::string_view s)
-{
-    size_t idx = 0;
-    while (idx < s.size())
-    {
-        if (s[idx] == '\033' && idx + 1 < s.size() && s[idx + 1] == '[')
-        {
-            idx += 2; // skip ESC [
-            while (idx < s.size() && s[idx] != 'm')
-                ++idx;
-            if (idx < s.size() && s[idx] == 'm')
-                ++idx; // skip final 'm'
-        }
-        else
-        {
-            os.put(s[idx++]);
-        }
-    }
-}
-
-inline std::string_view getLogLevelName(LogLevel level) noexcept
-{
-    static constexpr auto trace = "trace";
-    static constexpr auto info = "info";
-    static constexpr auto warn = "warn";
-    static constexpr auto error = "error";
-    static constexpr auto critical = "critical";
-    static constexpr auto debug = "debug";
-    static constexpr auto scope = "scope";
-    static constexpr auto unknown = "unknown";
-
-    switch (level)
-    {
-    case LogLevel::Trace:
-        return trace;
-    case LogLevel::Info:
-        return info;
-    case LogLevel::Warn:
-        return warn;
-    case LogLevel::Error:
-        return error;
-    case LogLevel::Critical:
-        return critical;
-    case LogLevel::Debug:
-        return debug;
-    case LogLevel::Scope:
-        return scope;
-    default:
-        return unknown;
-    }
-}
-
-inline std::string_view getSeparatorColor() noexcept
-{
-    static constexpr auto gray = "\033[90m";
-    return gray;
-}
 
 Logger& Logger::instance()
 {
@@ -146,6 +58,11 @@ Logger::Logger()
     , m_worker{&Logger::processQueue, this}
     , m_log_file{Logger::GetLogFilePath(), std::ios::trunc}
 {
+    if (!m_log_file.is_open())
+    {
+        LOG_CRITICAL("Warning: failed to open log file {}", GetLogFilePath().c_str());
+        std::terminate();
+    }
 }
 
 void Logger::processQueue()
@@ -181,85 +98,6 @@ void Logger::processQueue()
     }
 }
 
-enum class EFormatMessageScopeType
-{
-    Color,
-    NonColor
-};
-
-template <EFormatMessageScopeType FormatType>
-void formatMessageScope(std::ostream& oss, std::string_view const& scope, std::string_view color)
-{
-    if (scope.empty())
-        return;
-
-    std::string_view name = scope;
-
-    auto space = name.find(' ');
-    if (space != std::string_view::npos)
-    {
-        auto possibleName = name.substr(space + 1);
-
-        // only strip if it looks like a function
-        if (possibleName.find('(') != std::string_view::npos)
-            name = possibleName;
-    }
-
-    // Find first namespace/class scope
-    auto firstScope = name.find("::");
-    if (firstScope != std::string_view::npos)
-    {
-        // Remove return type / qualifiers before it
-        auto space = name.rfind(' ', firstScope);
-        if (space != std::string_view::npos)
-            name.remove_prefix(space + 1);
-    }
-
-    // Remove parameter list
-    auto openParen = name.find('(');
-    if (openParen != std::string_view::npos)
-        name = name.substr(0, openParen);
-
-    static constexpr auto gray = "\033[90m";
-
-    if constexpr (FormatType == EFormatMessageScopeType::NonColor)
-    {
-        size_t idx{0};
-        while (idx < name.size())
-        {
-            if (name[idx] == '\033' && idx + 1 < name.size() && name[idx + 1] == '[')
-            {
-                idx += 2; // skip \033[
-                while (idx < name.size() && name[idx] != 'm')
-                    ++idx;
-                if (idx < name.size() && name[idx] == 'm')
-                    ++idx; // skip final 'm'
-            }
-            else
-            {
-                oss << name[idx++];
-            }
-        }
-    }
-    else
-    {
-        size_t start = 0;
-        while (true)
-        {
-            auto pos = name.find("::", start);
-            if (pos == std::string_view::npos)
-            {
-                oss << color << name.substr(start);
-                break;
-            }
-
-            oss << color << name.substr(start, pos - start);
-            oss << gray << "::";
-            start = pos + 2;
-        }
-    }
-}
-
 void Logger::printMessage(const LogMessage& msg)
 {
     // Format: | HH:MM:SS:ms:ns | LEVEL | Scope::Subscope: Message
@@ -279,9 +117,9 @@ void Logger::printMessage(const LogMessage& msg)
     auto const ms = static_cast<int>(milliseconds.count());
     auto const ns = static_cast<int>(nanoseconds.count());
 
-    auto const levelColor = getLogColor(msg.level);
+    auto const levelColor = Formatter::getLevelColor(msg.level);
     auto const reset = "\033[97m";
-    auto const sepColor = getSeparatorColor();
+    auto const sepColor = Formatter::getSeparatorColor();
 
     // std::ostringstream oss;
     static std::mutex write_mutex;
@@ -292,11 +130,11 @@ void Logger::printMessage(const LogMessage& msg)
         << sepColor << "| " 
         << levelColor << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
         << sepColor << " | " 
-        << levelColor << std::setw(8) << std::setfill(' ') << std::right << getLogLevelName(msg.level)
+        << levelColor << std::setw(8) << std::setfill(' ') << std::right << Formatter::getLevelName(msg.level)
         << sepColor << " | "
         << levelColor;
 
-    formatMessageScope<EFormatMessageScopeType::Color>(std::cout, msg.scope, levelColor);
+    Formatter::formatScopeColored(std::cout, msg.scope, levelColor);
 
     std::cout << sepColor << " » " << reset << msg.message << "\n";
 
@@ -304,13 +142,13 @@ void Logger::printMessage(const LogMessage& msg)
         << "| " 
         << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
         << " | " 
-        << std::setw(8) << std::setfill(' ') << std::right << getLogLevelName(msg.level)
+        << std::setw(8) << std::setfill(' ') << std::right << Formatter::getLevelName(msg.level)
         << " | ";
 
-    formatMessageScope<EFormatMessageScopeType::NonColor>(m_log_file, msg.scope, levelColor);
+    Formatter::formatScopePlain(m_log_file, msg.scope);
 
     m_log_file << " » ";
-    writeWithoutAnsi(m_log_file, msg.message);
+    Ansi::writeWithoutAnsi(m_log_file, msg.message);
     m_log_file << "\n";
     // clang-format on
 }
