@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -96,6 +96,11 @@ Logger& Logger::instance()
 
 void Logger::enqueue(LogMessage&& msg)
 {
+    if (!m_running)
+    {
+        return;
+    }
+
     {
         std::lock_guard<std::mutex> lock(m_queue_mutex);
         m_queue.emplace(std::move(msg));
