@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.11
+/// @version 0.12
 /// @brief Playground.
 ///
 
@@ -294,16 +294,11 @@ private: // UI
                     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.0f, 0.75f, 0.0f, 1.0f});
                     if (ImGui::Button("Ban"))
                     {
-                        m_state.save_players_data = true;
-                        LOG_INFO(
-                            "Shallow Banned player {}::{}",
-                            player_index,
-                            m_state.players[player_index].name);
-                        m_state.players[player_index].banned = true;
+                        m_state.target_ban_player = player_index;
                     }
                     ImGui::PopStyleColor(2); // ban button
 
-                    ImGui::PopStyleColor(1); // text color
+                    ImGui::PopStyleColor(1);
 
                     ImGui::PopID();
                 }
@@ -311,6 +306,56 @@ private: // UI
 
             ImGui::EndTable();
         }
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+        if (static_cast<bool>(m_state.target_ban_player))
+        {
+            ImGui::OpenPopup("Confirm Ban?");
+        }
+        // This must use the EXACT same string ID as OpenPopup
+        if (ImGui::BeginPopupModal("Confirm Ban?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            if (static_cast<bool>(m_state.target_ban_player))
+            {
+                ImGui::Text(
+                    "Are you sure you want to ban %s?\nThis action cannot be "
+                    "undone.",
+                    m_state.players[*m_state.target_ban_player].name.c_str());
+                ImGui::Separator();
+
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.0f, 0.0f, 0.5f});
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{1.0f, 0.0f, 0.0f, 0.75f});
+                if (ImGui::Button("Yes, Ban Them", ImVec2(120, 0)))
+                {
+                    m_state.save_players_data = true;
+                    LOG_INFO(
+                        "Shallow Banned player {}::{}",
+                        *m_state.target_ban_player,
+                        m_state.players[*m_state.target_ban_player].name);
+                    m_state.players[*m_state.target_ban_player].banned = true;
+
+                    m_state.target_ban_player = std::nullopt;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::PopStyleColor(2);
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0)))
+                {
+                    m_state.target_ban_player = std::nullopt;
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+            else
+            {
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::PopStyleColor(1); // text color
+
         ImGui::EndChild();
     }
 
@@ -696,6 +741,7 @@ private: // Data Structures
         bool reorder_players_data{false};
         bool show_players{true};
         std::optional<std::size_t> selected_player{std::nullopt};
+        std::optional<std::size_t> target_ban_player{std::nullopt};
         std::vector<Player> players{};
         std::vector<std::size_t> sorted_players_indices{};
     };
