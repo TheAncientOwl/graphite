@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.5
+/// @version 0.6
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -50,16 +50,36 @@ inline std::string_view getLogColor(LogLevel level) noexcept
     }
 }
 
+static void writeWithoutAnsi(std::ostream& os, std::string_view s)
+{
+    size_t idx = 0;
+    while (idx < s.size())
+    {
+        if (s[idx] == '\033' && idx + 1 < s.size() && s[idx + 1] == '[')
+        {
+            idx += 2; // skip ESC [
+            while (idx < s.size() && s[idx] != 'm')
+                ++idx;
+            if (idx < s.size() && s[idx] == 'm')
+                ++idx; // skip final 'm'
+        }
+        else
+        {
+            os.put(s[idx++]);
+        }
+    }
+}
+
 inline std::string_view getLogLevelName(LogLevel level) noexcept
 {
-    static constexpr auto trace = "Trace";
-    static constexpr auto info = "Info";
-    static constexpr auto warn = "Warn";
-    static constexpr auto error = "Error";
-    static constexpr auto critical = "Critical";
-    static constexpr auto debug = "Debug";
-    static constexpr auto scope = "Scope";
-    static constexpr auto unknown = "Unknown";
+    static constexpr auto trace = "trace";
+    static constexpr auto info = "info";
+    static constexpr auto warn = "warn";
+    static constexpr auto error = "error";
+    static constexpr auto critical = "critical";
+    static constexpr auto debug = "debug";
+    static constexpr auto scope = "scope";
+    static constexpr auto unknown = "unknown";
 
     switch (level)
     {
@@ -161,7 +181,14 @@ void Logger::processQueue()
     }
 }
 
-void formatMessageScope(std::ostringstream& oss, std::string_view const& scope, std::string_view color)
+enum class EFormatMessageScopeType
+{
+    Color,
+    NonColor
+};
+
+template <EFormatMessageScopeType FormatType>
+void formatMessageScope(std::ostream& oss, std::string_view const& scope, std::string_view color)
 {
     if (scope.empty())
         return;
@@ -195,19 +222,41 @@ void formatMessageScope(std::ostringstream& oss, std::string_view const& scope, 
 
     static constexpr auto gray = "\033[90m";
 
-    size_t start = 0;
-    while (true)
+    if constexpr (FormatType == EFormatMessageScopeType::NonColor)
     {
-        auto pos = name.find("::", start);
-        if (pos == std::string_view::npos)
+        size_t idx{0};
+        while (idx < name.size())
         {
-            oss << color << name.substr(start);
-            break;
+            if (name[idx] == '\033' && idx + 1 < name.size() && name[idx + 1] == '[')
+            {
+                idx += 2; // skip \033[
+                while (idx < name.size() && name[idx] != 'm')
+                    ++idx;
+                if (idx < name.size() && name[idx] == 'm')
+                    ++idx; // skip final 'm'
+            }
+            else
+            {
+                oss << name[idx++];
+            }
         }
+    }
+    else
+    {
+        size_t start = 0;
+        while (true)
+        {
+            auto pos = name.find("::", start);
+            if (pos == std::string_view::npos)
+            {
+                oss << color << name.substr(start);
+                break;
+            }
 
-        oss << color << name.substr(start, pos - start);
-        oss << gray << "::";
-        start = pos + 2;
+            oss << color << name.substr(start, pos - start);
+            oss << gray << "::";
+            start = pos + 2;
+        }
     }
 }
 
@@ -234,9 +283,12 @@ void Logger::printMessage(const LogMessage& msg)
     auto const reset = "\033[97m";
     auto const sepColor = getSeparatorColor();
 
-    std::ostringstream oss;
+    // std::ostringstream oss;
+    static std::mutex write_mutex;
+    std::lock_guard<std::mutex> lock(write_mutex);
+
     // clang-format off
-    oss 
+    std::cout 
         << sepColor << "| " 
         << levelColor << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
         << sepColor << " | " 
@@ -244,18 +296,23 @@ void Logger::printMessage(const LogMessage& msg)
         << sepColor << " | "
         << levelColor;
 
-    formatMessageScope(oss, msg.scope, levelColor);
+    formatMessageScope<EFormatMessageScopeType::Color>(std::cout, msg.scope, levelColor);
 
-    oss << sepColor << " » " << reset << msg.message << "\n";
+    std::cout << sepColor << " » " << reset << msg.message << "\n";
+
+    m_log_file
+        << "| " 
+        << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
+        << " | " 
+        << std::setw(8) << std::setfill(' ') << std::right << getLogLevelName(msg.level)
+        << " | ";
+
+    formatMessageScope<EFormatMessageScopeType::NonColor>(m_log_file, msg.scope, levelColor);
+
+    m_log_file << " » ";
+    writeWithoutAnsi(m_log_file, msg.message);
+    m_log_file << "\n";
     // clang-format on
-
-    {
-        static std::mutex write_mutex;
-        std::lock_guard<std::mutex> lock(write_mutex);
-        auto const str{oss.str()};
-        std::cout << str;
-        m_log_file << str;
-    }
 }
 
 ScopeLogger::ScopeLogger(std::string_view const tag, std::string_view const scope)
