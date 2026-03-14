@@ -5,7 +5,7 @@
 ///
 /// @file TGraphiteApplication.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.4
+/// @version 0.5
 /// @brief Main application.
 ///
 
@@ -32,16 +32,25 @@ class TGraphiteApplication
     , public std::enable_shared_from_this<TGraphiteApplication<ApplicationState>>
 {
 public:
-    TGraphiteApplication(WindowConfiguration window_configuration, ApplicationState initial_state);
+    template <typename ApplicationImpl>
+        requires std::derived_from<ApplicationImpl, TGraphiteApplication<ApplicationState>>
+    static std::shared_ptr<ApplicationImpl> CreateApplication(
+        WindowConfiguration window_configuration,
+        ApplicationState app_state)
+    {
+        return std::shared_ptr<ApplicationImpl>(
+            new ApplicationImpl(std::move(window_configuration), std::move(app_state)));
+    }
+
     virtual ~TGraphiteApplication() = default;
 
-public:
     void Run();
 
 private:
     virtual void AppInit() = 0;
 
 protected:
+    TGraphiteApplication(WindowConfiguration window_configuration, ApplicationState initial_state);
     ApplicationState& GetApplicationState();
 
     template <typename LayerImpl, typename... Args>

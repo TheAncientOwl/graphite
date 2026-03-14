@@ -5,7 +5,7 @@
 ///
 /// @file PlayersApplication.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Migration of @see demo/BasicTableApp.
 ///
 
@@ -19,10 +19,6 @@ namespace Graphite::Project {
 class PlayersApplication : public Graphite::Core::Application::TGraphiteApplication<AppState>
 {
 public:
-    PlayersApplication(
-        Graphite::Core::Application::WindowConfiguration window_configuration,
-        AppState initial_state);
-
     ~PlayersApplication();
 
     static inline constexpr std::filesystem::path GetPlayersDataPath()
@@ -31,6 +27,11 @@ public:
     }
 
 private:
+    friend class Graphite::Core::Application::TGraphiteApplication<AppState>;
+    PlayersApplication(
+        Graphite::Core::Application::WindowConfiguration window_configuration,
+        AppState initial_state);
+
     void LoadPlayers();
     void ApplyTheme();
 

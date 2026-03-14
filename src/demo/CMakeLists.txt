@@ -12,4 +12,4 @@ target_include_directories(graphite_demo PRIVATE
     ${PROJECT_SOURCE_DIR}/src
 )
 
-add_subdirectory(plugin)
+# add_subdirectory(plugin)

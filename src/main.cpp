@@ -5,7 +5,7 @@
 ///
 /// @file main.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.5
+/// @version 0.6
 /// @brief ImGui entry point.
 ///
 
@@ -26,8 +26,11 @@ int main()
     window_configuration.height = 600;
     window_configuration.title = "Players Manager";
 
-    auto app = std::make_shared<Graphite::Project::PlayersApplication>(
-        window_configuration, Graphite::Project::AppState{});
+    auto app =
+        Graphite::Core::Application::TGraphiteApplication<Graphite::Project::AppState>::CreateApplication<
+            Graphite::Project::PlayersApplication>(
+            std::move(window_configuration), Graphite::Project::AppState{});
+
     app->Run();
 
     return EXIT_SUCCESS;
