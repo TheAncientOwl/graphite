@@ -5,7 +5,7 @@
 ///
 /// @file PlayersApplication.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Implementation of @see PlayersApplication.hpp.
 ///
 
@@ -55,7 +55,7 @@ void PlayersApplication::LoadPlayers()
     {
         LOG_INFO("Initial app run, setting dummy data");
         m_app_state.save_players_data = true;
-        static constexpr std::size_t default_players = 2000000;
+        static constexpr std::size_t default_players = 10000;
 
         std::mt19937 rng{std::random_device{}()};
         std::uniform_int_distribution<int> health_dist(0, 100);
