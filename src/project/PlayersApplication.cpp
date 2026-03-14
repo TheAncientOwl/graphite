@@ -13,6 +13,8 @@
 #include <random>
 #include <ranges>
 
+#include "imgui/imgui.h"
+
 #include "PlayersApplication.hpp"
 #include "layers/MainLayer.hpp"
 
@@ -21,7 +23,7 @@ namespace Graphite::Project {
 PlayersApplication::PlayersApplication(
     Graphite::Core::Application::WindowConfiguration window_configuration,
     AppState initial_state)
-    : GraphiteApplication{std::move(window_configuration), std::move(initial_state)}
+    : TGraphiteApplication{std::move(window_configuration), std::move(initial_state)}
 {
     LOG_SCOPE("");
 }

@@ -12,11 +12,11 @@
 #include <filesystem>
 
 #include "AppState.hpp"
-#include "core/application/GraphiteApplication.hpp"
+#include "TGraphiteApplication.hpp"
 
 namespace Graphite::Project {
 
-class PlayersApplication : public Graphite::Core::Application::GraphiteApplication<AppState>
+class PlayersApplication : public Graphite::Core::Application::TGraphiteApplication<AppState>
 {
 public:
     PlayersApplication(

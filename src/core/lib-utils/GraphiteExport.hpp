@@ -3,14 +3,16 @@
 /// --------------------------------------------------------------------------
 /// @license https://github.com/TheAncientOwl/imgui-lab/blob/main/LICENSE
 ///
-/// @file GraphiteApplication.cpp
+/// @file Export.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
-/// @brief Implementation of @see GraphiteApplication.hpp.
+/// @version 0.1
+/// @brief .
 ///
 
-#include "core/application/GraphiteApplication.hpp"
+#pragma once
 
-namespace Graphite::Core::Application {
-
-}; // namespace Graphite::Core::Application
+#if defined(_WIN32)
+#define GRAPHITE_EXPORT __declspec(dllexport)
+#else
+#define GRAPHITE_EXPORT __attribute__((visibility("default")))
+#endif

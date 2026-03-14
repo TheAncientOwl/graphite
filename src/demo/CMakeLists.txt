@@ -11,3 +11,5 @@ target_link_libraries(graphite_demo PRIVATE
 target_include_directories(graphite_demo PRIVATE
     ${PROJECT_SOURCE_DIR}/src
 )
+
+add_subdirectory(plugin)

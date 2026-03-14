@@ -28,41 +28,16 @@ using LibHandle = void*;
 class DynamicLibrary
 {
 private:
-    DynamicLibrary(const char* path)
-    {
-#if defined(_WIN32)
-        handle = LoadLibraryA(path.c_str());
-#else
-        handle = dlopen(path, RTLD_LAZY);
-#endif
-    }
+    DynamicLibrary(const char* path);
 
 public:
-    DynamicLibrary(const std::string& path) : DynamicLibrary(path.c_str()) {}
-    DynamicLibrary(const std::filesystem::path& path) : DynamicLibrary(path.c_str()) {}
+    DynamicLibrary(std::string_view const path);
+    DynamicLibrary(std::filesystem::path const& path);
 
-    ~DynamicLibrary()
-    {
-        if (handle)
-        {
-#if defined(_WIN32)
-            FreeLibrary(handle);
-#else
-            dlclose(handle);
-#endif
-        }
-    }
+    ~DynamicLibrary();
 
-    void* getSymbol(const std::string& name)
-    {
-#if defined(_WIN32)
-        return (void*)GetProcAddress(handle, name.c_str());
-#else
-        return dlsym(handle, name.c_str());
-#endif
-    }
-
-    bool isLoaded() const { return handle != nullptr; }
+    void* getSymbol(std::string_view const name);
+    bool isLoaded() const;
 
 private:
     LibHandle handle;

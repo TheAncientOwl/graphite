@@ -14,10 +14,8 @@
 
 #include "imgui/imgui.h"
 
+#include "core/application/renderer/Renderer.hpp"
 #include "core/logger/Logger.hpp"
-#include "core/renderer/Renderer.hpp"
-
-#include "demo/BasicTableApp.hpp"
 
 #include "core/plugin/DynamicLibrary.hpp"
 #include "core/plugin/IPlugin.hpp"
@@ -25,13 +23,6 @@
 int main()
 {
     LOG_SCOPE("");
-
-    // auto app = std::make_shared<Graphite::Demo::BasicTableApp>();
-
-    // auto renderer = Graphite::Core::Renderer::CreateRenderer();
-    // renderer->Init();
-    // renderer->Render(app);
-    // renderer->Cleanup();
 
 #ifdef _WIN32
     auto const lib_path{std::filesystem::current_path() / "plugins" / "libdummy_plugin.dll"};

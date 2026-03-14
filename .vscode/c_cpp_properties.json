@@ -5,9 +5,12 @@
       "defines": ["GRAPHITE_USE_METAL_API"],
       "includePath": [
         "${workspaceFolder}/src",
+        "${workspaceFolder}/src/core/application",
+
         "${workspaceFolder}/external",
         "${workspaceFolder}/external/imgui",
         "${workspaceFolder}/external/imgui/backends",
+
         "/opt/homebrew/include",
         "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
       ]

@@ -4,6 +4,7 @@ add_library(dummy_plugin SHARED
 
 target_include_directories(dummy_plugin
     PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src
 )
 

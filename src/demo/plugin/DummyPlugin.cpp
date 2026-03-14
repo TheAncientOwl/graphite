@@ -11,6 +11,8 @@
 
 #include "IPlugin.hpp"
 
+#include "core/lib-utils/GraphiteExport.hpp"
+
 #include "core/logger/Logger.hpp"
 
 namespace Graphite::Core::Plugin {

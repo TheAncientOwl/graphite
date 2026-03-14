@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "core/application/ApplicationLayer.hpp"
+#include "core/application/ILayer.hpp"
 #include "project/AppState.hpp"
 
 namespace Graphite::Project::Layers {
@@ -19,11 +19,11 @@ namespace Graphite::Project::Layers {
 class MainLayer : public Graphite::Core::Application::ILayer<AppState>
 {
 public:
-    static std::string_view GetLayerName();
+    static std::string_view GetLayerName() noexcept;
 
     MainLayer();
 
-    std::string_view GetName() override;
+    std::string_view GetName() const noexcept override;
     void OnPush(AppState& app_state) override;
     void OnPop(AppState& app_state) override;
     void OnBeforeRender(AppState& app_state) override;

@@ -12,11 +12,7 @@
 #include <memory>
 #include <string_view>
 
-#if defined(_WIN32)
-#define GRAPHITE_EXPORT __declspec(dllexport)
-#else
-#define GRAPHITE_EXPORT __attribute__((visibility("default")))
-#endif
+#include "core/plugin/GraphiteExport.hpp"
 
 namespace Graphite::Core::Plugin {
 

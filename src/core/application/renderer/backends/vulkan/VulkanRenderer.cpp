@@ -10,7 +10,7 @@
 ///
 
 #include "VulkanRenderer.hpp"
-#include "core/logger/Logger.hpp"
+#include "Logger.hpp"
 
 #include <exception>
 

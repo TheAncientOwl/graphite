@@ -11,8 +11,8 @@
 
 #include <exception>
 
+#include "Logger.hpp"
 #include "core/application/WindowConfiguration.hpp"
-#include "core/logger/Logger.hpp"
 
 #include "MetalRenderer.hpp"
 #include "MetalRendererState.mm"

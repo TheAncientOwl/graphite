@@ -21,7 +21,7 @@
 
 namespace Graphite::Project::Layers {
 
-std::string_view MainLayer::GetLayerName()
+std::string_view MainLayer::GetLayerName() noexcept
 {
     return "MainLayer";
 }
@@ -31,7 +31,7 @@ MainLayer::MainLayer()
     LOG_SCOPE("");
 }
 
-std::string_view MainLayer::GetName()
+std::string_view MainLayer::GetName() const noexcept
 {
     return GetLayerName();
 }

@@ -5,7 +5,7 @@ set(CORE_RENDERER_SOURCES
     ${PROJECT_SOURCE_DIR}/external/imgui/imgui_draw.cpp
     ${PROJECT_SOURCE_DIR}/external/imgui/imgui_tables.cpp
     ${PROJECT_SOURCE_DIR}/external/imgui/imgui_widgets.cpp
-    ${PROJECT_SOURCE_DIR}/external/imgui/imgui_demo.cpp
+    # ${PROJECT_SOURCE_DIR}/external/imgui/imgui_demo.cpp
 )
 
 if(APPLE)
@@ -44,14 +44,14 @@ target_link_libraries(graphite_core_renderer PRIVATE graphite_core_logger)
 
 # 2. Set compile definitions
 if(APPLE)
-    message(STATUS "Core::Renderer::GRAPHITE_USE_METAL_API")
+    message(STATUS "Graphite::Core::Application::Renderer::GRAPHITE_USE_METAL_API")
     target_compile_definitions(graphite_core_renderer PRIVATE GRAPHITE_USE_METAL_API)
 
     target_compile_options(graphite_core_renderer PRIVATE
         -Wno-arc-bridge-casts-disallowed-in-nonarc
     )
 else()
-    message(STATUS "Core::Renderer::GRAPHITE_USE_VULKAN_API")
+    message(STATUS "Graphite::Core::Application::Renderer::GRAPHITE_USE_VULKAN_API")
     target_compile_definitions(graphite_core_renderer PRIVATE GRAPHITE_USE_VULKAN_API)
 endif()
 
