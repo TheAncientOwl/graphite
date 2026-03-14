@@ -18,8 +18,8 @@
 #include "MetalRendererState.mm"
 
 #include <stdio.h>
-#include "Backends/imgui_impl_glfw.h"
-#include "Backends/imgui_impl_metal.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_metal.h"
 #include "imgui.h"
 
 #define GLFW_INCLUDE_NONE
