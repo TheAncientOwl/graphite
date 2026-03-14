@@ -1,10 +1,9 @@
-add_library(graphite_core_application STATIC
+add_library(graphite_core_application SHARED
     GraphiteApplication.cpp
 )
 
 target_link_libraries(graphite_core_application PRIVATE
     graphite_core_logger
-    graphite_core_renderer
     graphite_core_renderer
 )
 

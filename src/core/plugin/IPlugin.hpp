@@ -5,7 +5,7 @@
 ///
 /// @file IPlugin.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Test plugin interface.
 ///
 
@@ -25,7 +25,7 @@ class IGraphitePlugin
 public:
     virtual void Execute() = 0;
     virtual std::string_view GetName() = 0;
-    virtual ~IGraphitePlugin() {}
+    virtual ~IGraphitePlugin() = default;
 };
 
 }; // namespace Graphite::Core::Plugin

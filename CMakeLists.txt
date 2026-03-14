@@ -24,7 +24,7 @@ add_executable(graphite ${SOURCES})
 target_link_libraries(graphite PRIVATE
     graphite_core_logger
     graphite_core_renderer
-    # graphite_core_application
+    graphite_core_application
     graphite_demo
 )
 

@@ -5,7 +5,7 @@
 ///
 /// @file Logger.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Logging utilities
 ///
 
@@ -120,8 +120,8 @@ private:
     ::Graphite::Core::Logger::Logger::log( \
         ::Graphite::Core::Logger::LogLevel::Debug, __PRETTY_FUNCTION__, fmt __VA_OPT__(, ) __VA_ARGS__)
 
-#define LOG_SCOPE(scope)                                         \
-    ::Graphite::Core::Logger::ScopeLogger _graphite_scope_logger \
-    {                                                            \
-        scope, __PRETTY_FUNCTION__                               \
+#define LOG_SCOPE(fmt, ...)                                              \
+    ::Graphite::Core::Logger::ScopeLogger _graphite_scope_logger         \
+    {                                                                    \
+        std::format(fmt __VA_OPT__(, ) __VA_ARGS__), __PRETTY_FUNCTION__ \
     }

@@ -1,0 +1,33 @@
+/// --------------------------------------------------------------------------
+///                     Copyright (c) by ImGui-Lab 2026
+/// --------------------------------------------------------------------------
+/// @license https://github.com/TheAncientOwl/imgui-lab/blob/main/LICENSE
+///
+/// @file ApplicationLayer.hpp
+/// @author Alexandru Delegeanu
+/// @version 0.1
+/// @brief App layer.
+///
+
+#include <memory>
+#include <string_view>
+
+namespace Graphite::Core::Application {
+
+template <typename ApplicationState>
+class ILayer
+{
+public:
+    using Ptr = std::unique_ptr<ILayer<ApplicationState>>;
+
+public:
+    virtual std::string_view GetName() = 0;
+
+    virtual void OnPush(ApplicationState& app_state) = 0;
+    virtual void OnPop(ApplicationState& app_state) = 0;
+    virtual void OnRender(ApplicationState& app_state) = 0;
+    virtual void OnShutdown(ApplicationState& app_state) = 0;
+    virtual ~ILayer() = default;
+};
+
+} // namespace Graphite::Core::Application
