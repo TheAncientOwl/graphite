@@ -5,7 +5,7 @@
 ///
 /// @file MetalRenderer.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Metal implementation of @see core/Renderer.hpp.
 /// Adaptation of @see external/imgui/examples/example_glfw_metal/main.mm
 ///
@@ -24,7 +24,7 @@ public:
     MetalRenderer();
     ~MetalRenderer() override;
 
-    void Init() override;
+    void Init(Graphite::Core::Application::WindowConfiguration const& window_configuration) override;
     void Render(std::shared_ptr<IRenderable> user_interface) override;
     void Cleanup() override;
 

@@ -5,13 +5,15 @@
 ///
 /// @file Renderer.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Create IRenderer based on buid platform.
 ///
 
 #pragma once
 
 #include <memory>
+
+#include "core/application/WindowConfiguration.hpp"
 
 namespace Graphite::Core::Renderer {
 
@@ -25,7 +27,7 @@ public:
 class IRenderer
 {
 public:
-    virtual void Init() = 0;
+    virtual void Init(Graphite::Core::Application::WindowConfiguration const& window_configuration) = 0;
     virtual void Render(std::shared_ptr<IRenderable> user_interface) = 0;
     virtual void Cleanup() = 0;
     virtual ~IRenderer() = default;

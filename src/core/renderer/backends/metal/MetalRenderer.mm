@@ -5,12 +5,13 @@
 ///
 /// @file MetalRenderer.mm
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief Implementation of @see MetalRenderer.hpp.
 ///
 
 #include <exception>
 
+#include "core/application/WindowConfiguration.hpp"
 #include "core/logger/Logger.hpp"
 
 #include "MetalRenderer.hpp"
@@ -47,7 +48,7 @@ MetalRenderer::~MetalRenderer()
     Cleanup();
 }
 
-void MetalRenderer::Init()
+void MetalRenderer::Init(Graphite::Core::Application::WindowConfiguration const& window_configuration)
 {
     LOG_SCOPE("");
 
@@ -60,7 +61,11 @@ void MetalRenderer::Init()
         ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor()); // Valid on GLFW 3.3+ only
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     m_state->window = glfwCreateWindow(
-        (int)(500 * main_scale), (int)(550 * main_scale), "Dear ImGui GLFW+Metal example", nullptr, nullptr);
+        (int)(window_configuration.width * main_scale),
+        (int)(window_configuration.height * main_scale),
+        window_configuration.title.data(),
+        nullptr,
+        nullptr);
     if (m_state->window == nullptr)
         std::terminate();
 
@@ -72,10 +77,6 @@ void MetalRenderer::Init()
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    // Setup Dear ImGui style
-    // ImGui::StyleColorsDark();
-    // ImGui::StyleColorsLight();
 
     // Setup scaling
     ImGuiStyle& style = ImGui::GetStyle();
@@ -105,7 +106,7 @@ void MetalRenderer::Init()
 
 void MetalRenderer::Render(std::shared_ptr<IRenderable> user_interface)
 {
-    LOG_SCOPE("");
+    LOG_SCOPE("Main Render Loop");
 
     while (!glfwWindowShouldClose(m_state->window))
     {

@@ -5,7 +5,7 @@
 ///
 /// @file GraphiteApplication.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief Main application.
 ///
 
@@ -92,7 +92,7 @@ void GraphiteApplication<ApplicationState>::Init()
 {
     LOG_SCOPE("");
     m_renderer = Graphite::Core::Renderer::CreateRenderer();
-    m_renderer->Init();
+    m_renderer->Init(m_window_configuration);
 
     AppInit();
 }

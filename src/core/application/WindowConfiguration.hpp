@@ -5,7 +5,7 @@
 ///
 /// @file WindowConfiguration.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Configuration of graphite app window.
 ///
 
@@ -20,7 +20,7 @@ struct WindowConfiguration
 {
     std::uint32_t width{0};
     std::uint32_t height{0};
-    std::string name{};
+    std::string title{};
 };
 
 } // namespace Graphite::Core::Application
