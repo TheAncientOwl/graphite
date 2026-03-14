@@ -9,6 +9,8 @@
 /// @brief Migration of @see demo/BasicTableApp.
 ///
 
+#pragma once
+
 #include <filesystem>
 
 #include "AppState.hpp"
@@ -19,6 +21,8 @@ namespace Graphite::Project {
 class PlayersApplication : public Graphite::Core::Application::TGraphiteApplication<AppState>
 {
 public:
+    using Graphite::Core::Application::TGraphiteApplication<AppState>::Ptr;
+
     ~PlayersApplication();
 
     static inline constexpr std::filesystem::path GetPlayersDataPath()

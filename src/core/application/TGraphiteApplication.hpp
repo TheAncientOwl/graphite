@@ -5,7 +5,7 @@
 ///
 /// @file TGraphiteApplication.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.5
+/// @version 0.6
 /// @brief Main application.
 ///
 
@@ -55,6 +55,10 @@ public:
     LayerImpl& PushLayer(Args&&... args);
 
     void PopLayer();
+
+    void RemoveLayer(Graphite::Core::Utils::UniqueID const& uid);
+
+    bool IsLayerPushed(std::string_view const layer_name) const;
 
 private:
     virtual void AppInit() = 0;
@@ -150,6 +154,32 @@ void TGraphiteApplication<ApplicationState>::PopLayer()
         m_layers.back()->OnPop();
         m_layers.pop_back();
     }
+}
+
+template <typename ApplicationState>
+void TGraphiteApplication<ApplicationState>::RemoveLayer(Graphite::Core::Utils::UniqueID const& uid)
+{
+    m_layers.erase(
+        std::remove_if(
+            m_layers.begin(),
+            m_layers.end(),
+            [&](ILayer<ApplicationState>::Ptr& layer_ptr) {
+                if (layer_ptr->GetUID() == uid)
+                {
+                    layer_ptr->OnPop();
+                    return true;
+                }
+                return false;
+            }),
+        m_layers.end());
+}
+
+template <typename ApplicationState>
+bool TGraphiteApplication<ApplicationState>::IsLayerPushed(std::string_view const layer_name) const
+{
+    return std::find_if(m_layers.begin(), m_layers.end(), [layer_name](auto const& layer_ptr) {
+               return layer_ptr->GetName() == layer_name;
+           }) != m_layers.end();
 }
 
 template <typename ApplicationState>

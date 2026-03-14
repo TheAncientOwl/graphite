@@ -1,6 +1,7 @@
 add_library(graphite_project SHARED
     PlayersApplication.cpp
-     layers/MainLayer.cpp
+    layers/MainLayer.cpp
+    layers/PlayerEditLayer.cpp
 )
 
 target_link_libraries(graphite_project PRIVATE

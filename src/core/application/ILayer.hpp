@@ -5,7 +5,7 @@
 ///
 /// @file ILayer.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief App layer.
 ///
 
@@ -13,6 +13,8 @@
 
 #include <memory>
 #include <string_view>
+
+#include "core/utils/UniqueID.hpp"
 
 namespace Graphite::Core::Application {
 
@@ -25,9 +27,12 @@ class ILayer
 public:
     using Ptr = std::unique_ptr<ILayer<ApplicationState>>;
 
-    ILayer(Graphite::Core::Application::TGraphiteApplication<ApplicationState>::Ptr application)
-        : m_application{std::move(application)} {};
+    ILayer(std::shared_ptr<Graphite::Core::Application::TGraphiteApplication<ApplicationState>> application)
+        : m_application{std::move(application)}
+        , m_layer_uid{Graphite::Core::Utils::UniqueID::generate()} {};
     virtual ~ILayer() = default;
+
+    inline Graphite::Core::Utils::UniqueID const& GetUID() const noexcept { return m_layer_uid; }
 
 private:
     friend class Graphite::Core::Application::TGraphiteApplication<ApplicationState>;
@@ -40,6 +45,7 @@ private:
 
 protected:
     std::shared_ptr<TGraphiteApplication<ApplicationState>> m_application{nullptr};
+    Graphite::Core::Utils::UniqueID m_layer_uid{};
 };
 
 } // namespace Graphite::Core::Application

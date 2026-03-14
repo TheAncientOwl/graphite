@@ -5,19 +5,20 @@
 ///
 /// @file MainLayer.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Implementation of @see MainLayer.hpp.
 ///
 
 #include <numeric>
 #include <unordered_set>
 
+#include "MainLayer.hpp"
+#include "PlayerEditLayer.hpp"
+
 #include "imgui/imgui.h"
 
 #include "core/logger/Logger.hpp"
 #include "project/PlayersApplication.hpp"
-
-#include "MainLayer.hpp"
 
 namespace Graphite::Project::Layers {
 
@@ -77,9 +78,17 @@ void MainLayer::OnRender()
 
     RenderPlayersTable();
 
-    RenderEditSelectedPlayer();
-
     ImGui::End();
+
+    CleanupBanned();
+    SavePlayers();
+
+    if (static_cast<bool>(app_state.selected_player) &&
+        !m_application->IsLayerPushed(PlayerEditLayer::GetLayerName()))
+    {
+        auto app_ptr_clone{m_application};
+        m_application->PushLayer<PlayerEditLayer>(std::move(app_ptr_clone));
+    }
 }
 
 void MainLayer::RenderPlayersSelect()
@@ -368,51 +377,6 @@ void MainLayer::RenderPlayersTable()
     ImGui::PopStyleColor(1); // text color
 
     ImGui::EndChild();
-}
-
-void MainLayer::RenderEditSelectedPlayer()
-{
-    LOG_SCOPE("");
-    auto& app_state{m_application->GetApplicationState()};
-
-    if (!app_state.selected_player)
-        return;
-
-    auto const idx{*app_state.selected_player};
-
-    ImGui::Begin("Edit Player");
-
-    if (ImGui::InputText("Edit Name", app_state.edits.buffer, sizeof(app_state.edits.buffer)))
-    {
-        LOG_INFO(
-            "Saving player name -> prev{} -> now{}", app_state.players[idx].name, app_state.edits.buffer);
-        app_state.players[idx].name = app_state.edits.buffer;
-        app_state.save_players_data = true;
-        app_state.reorder_players_data = true;
-    }
-
-    ImGui::SliderInt("Health", &app_state.edits.health, 0, 100);
-    if (ImGui::IsItemDeactivatedAfterEdit())
-    {
-        LOG_INFO(
-            "Saving player health -> prev{} -> now{}",
-            app_state.players[idx].health,
-            app_state.edits.health);
-        app_state.players[idx].health = app_state.edits.health;
-        app_state.save_players_data = true;
-        app_state.reorder_players_data = true;
-    }
-
-    if (ImGui::Button("Done"))
-    {
-        LOG_INFO("Done editing");
-        app_state.selected_player = std::nullopt;
-    }
-
-    ImGui::End();
-
-    CleanupBanned();
-    SavePlayers();
 }
 
 void MainLayer::RenderMenuBar()
