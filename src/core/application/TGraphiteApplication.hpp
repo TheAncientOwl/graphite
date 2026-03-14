@@ -68,7 +68,6 @@ private:
     void Shutdown();
 
     void RenderLayers();
-    void ShutdownLayers();
 
 protected:
     WindowConfiguration m_window_configuration{};
@@ -119,7 +118,11 @@ template <typename ApplicationState>
 void TGraphiteApplication<ApplicationState>::Shutdown()
 {
     LOG_SCOPE("");
-    ShutdownLayers();
+    while (!m_layers.empty())
+    {
+        m_layers.back()->OnPop();
+        m_layers.pop_back();
+    }
     m_renderer->Cleanup();
 }
 #pragma endregion LifeCycle
@@ -140,10 +143,11 @@ LayerImpl& TGraphiteApplication<ApplicationState>::PushLayer(Args&&... args)
 }
 
 template <typename ApplicationState>
-void TGraphiteApplication<ApplicationState>::PopLayer() noexcept
+void TGraphiteApplication<ApplicationState>::PopLayer()
 {
     if (!m_layers.empty())
     {
+        m_layers.back()->OnPop();
         m_layers.pop_back();
     }
 }
@@ -159,20 +163,10 @@ void TGraphiteApplication<ApplicationState>::RenderLayers()
 {
     LOG_SCOPE("");
     std::for_each(m_layers.begin(), m_layers.end(), [this](ILayer<ApplicationState>::Ptr& layer_ptr) {
-        layer_ptr->OnBeforeRender();
         layer_ptr->OnRender();
-        layer_ptr->OnAfterRender();
     });
 }
 
-template <typename ApplicationState>
-void TGraphiteApplication<ApplicationState>::ShutdownLayers()
-{
-    LOG_SCOPE("");
-    std::for_each(m_layers.begin(), m_layers.end(), [this](ILayer<ApplicationState>::Ptr& layer_ptr) {
-        layer_ptr->OnShutdown();
-    });
-}
 #pragma endregion Internals
 
 } // namespace Graphite::Core::Application

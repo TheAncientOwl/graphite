@@ -25,11 +25,8 @@ public:
     MainLayer(Graphite::Project::PlayersApplication::Ptr application);
 
     void OnPush() override;
-    void OnPop() override;
-    void OnBeforeRender() override;
     void OnRender() override;
-    void OnAfterRender() override;
-    void OnShutdown() override;
+    void OnPop() override;
 
 private:
     void RenderPlayersSelect();

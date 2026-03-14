@@ -45,11 +45,7 @@ void MainLayer::OnPush()
 void MainLayer::OnPop()
 {
     LOG_SCOPE("");
-}
-
-void MainLayer::OnBeforeRender()
-{
-    LOG_SCOPE("");
+    SavePlayers();
 }
 
 void MainLayer::OnRender()
@@ -84,19 +80,6 @@ void MainLayer::OnRender()
     RenderEditSelectedPlayer();
 
     ImGui::End();
-}
-
-void MainLayer::OnAfterRender()
-{
-    LOG_SCOPE("");
-    CleanupBanned();
-    SavePlayers();
-}
-
-void MainLayer::OnShutdown()
-{
-    LOG_SCOPE("");
-    SavePlayers();
 }
 
 void MainLayer::RenderPlayersSelect()
@@ -427,6 +410,9 @@ void MainLayer::RenderEditSelectedPlayer()
     }
 
     ImGui::End();
+
+    CleanupBanned();
+    SavePlayers();
 }
 
 void MainLayer::RenderMenuBar()

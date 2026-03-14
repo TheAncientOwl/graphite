@@ -35,12 +35,8 @@ private:
     virtual std::string_view GetName() const noexcept = 0;
 
     virtual void OnPush() = 0;
-    virtual void OnPop() = 0;
-    virtual void OnShutdown() = 0;
-
-    virtual void OnBeforeRender() = 0;
     virtual void OnRender() = 0;
-    virtual void OnAfterRender() = 0;
+    virtual void OnPop() = 0;
 
 protected:
     std::shared_ptr<TGraphiteApplication<ApplicationState>> m_application{nullptr};
