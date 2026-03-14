@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.7
+/// @version 0.8
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -155,7 +155,7 @@ void Logger::printMessage(const LogMessage& msg)
 
         Formatter::formatScopeColored(std::cout, msg.scope, levelColor);
 
-        std::cout << sepColor << " » " << reset << msg.message << "\n";
+        std::cout << sepColor << " » " << reset << msg.message << std::endl;
 
         m_log_file
             << "| " 
@@ -168,7 +168,7 @@ void Logger::printMessage(const LogMessage& msg)
 
         m_log_file << " » ";
         Ansi::writeWithoutAnsi(m_log_file, msg.message);
-        m_log_file << "\n";
+        m_log_file << std::endl;
         // clang-format on
     }
     catch (const std::system_error& e)
