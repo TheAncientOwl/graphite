@@ -5,7 +5,7 @@
 ///
 /// @file PlayerEditLayer.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Implementation of @see PlayerEditLayer.hpp.
 ///
 
@@ -25,6 +25,13 @@ PlayerEditLayer::PlayerEditLayer(Graphite::Project::PlayersApplication::Ptr appl
 {
     LOG_SCOPE("");
 };
+
+PlayerEditLayer::PlayerEditLayer(
+    Graphite::Project::PlayersApplication::Ptr application,
+    Graphite::Core::Utils::UniqueID uid)
+    : ILayer{std::move(application), std::move(uid)}
+{
+}
 
 std::string_view PlayerEditLayer::GetName() const noexcept
 {

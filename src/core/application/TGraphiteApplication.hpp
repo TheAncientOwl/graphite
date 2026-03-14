@@ -5,7 +5,7 @@
 ///
 /// @file TGraphiteApplication.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.6
+/// @version 0.7
 /// @brief Main application.
 ///
 
@@ -32,6 +32,8 @@ class TGraphiteApplication
     , public std::enable_shared_from_this<TGraphiteApplication<ApplicationState>>
 {
 public:
+    using Ptr = std::shared_ptr<TGraphiteApplication<ApplicationState>>;
+
     template <typename ApplicationImpl>
         requires std::derived_from<ApplicationImpl, TGraphiteApplication<ApplicationState>>
     static std::shared_ptr<ApplicationImpl> CreateApplication(
@@ -44,21 +46,20 @@ public:
 
     void Run();
 
-    using Ptr = std::shared_ptr<TGraphiteApplication<ApplicationState>>;
-
     inline ApplicationState& GetApplicationState() noexcept;
 
     template <typename LayerImpl, typename... Args>
         requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
             { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
         }
-    LayerImpl& PushLayer(Args&&... args);
+    Graphite::Core::Utils::UniqueID const& PushLayer(Args&&... args);
 
     void PopLayer();
 
     void RemoveLayer(Graphite::Core::Utils::UniqueID const& uid);
-
-    bool IsLayerPushed(std::string_view const layer_name) const;
+    bool IsLayerPushed(Graphite::Core::Utils::UniqueID const& uid) const;
+    std::weak_ptr<ILayer<ApplicationState>> GetLayer(Graphite::Core::Utils::UniqueID const& uid);
+    std::weak_ptr<ILayer<ApplicationState>> const GetLayer(Graphite::Core::Utils::UniqueID const& uid) const;
 
 private:
     virtual void AppInit() = 0;
@@ -82,7 +83,6 @@ private:
     std::unique_ptr<Graphite::Core::Renderer::IRenderer> m_renderer{nullptr};
 };
 
-#pragma region LifeCycle
 template <typename ApplicationState>
 TGraphiteApplication<ApplicationState>::TGraphiteApplication(
     WindowConfiguration window_configuration,
@@ -129,21 +129,31 @@ void TGraphiteApplication<ApplicationState>::Shutdown()
     }
     m_renderer->Cleanup();
 }
-#pragma endregion LifeCycle
 
-#pragma region Internals
 template <typename ApplicationState>
 template <typename LayerImpl, typename... Args>
     requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
         { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
     }
-LayerImpl& TGraphiteApplication<ApplicationState>::PushLayer(Args&&... args)
+Graphite::Core::Utils::UniqueID const& TGraphiteApplication<ApplicationState>::PushLayer(Args&&... args)
 {
     LOG_SCOPE("{}", LayerImpl::GetLayerName().data());
     auto layer = std::make_unique<LayerImpl>(std::forward<Args>(args)...);
+
+    GRAPHITE_ASSERT(
+        std::find_if(
+            m_layers.cbegin(),
+            m_layers.cend(),
+            [&uid = layer->GetUID()](auto const& layer_ptr) { return layer_ptr->GetUID() == uid; }) ==
+            m_layers.cend(),
+        "Trying to add layer with same ID");
+
     layer->OnPush();
+
+    auto const& layer_uid{layer->GetUID()};
     m_layers.push_back(std::move(layer));
-    return static_cast<LayerImpl&>(*m_layers.back());
+
+    return layer_uid;
 }
 
 template <typename ApplicationState>
@@ -175,11 +185,22 @@ void TGraphiteApplication<ApplicationState>::RemoveLayer(Graphite::Core::Utils::
 }
 
 template <typename ApplicationState>
-bool TGraphiteApplication<ApplicationState>::IsLayerPushed(std::string_view const layer_name) const
+bool TGraphiteApplication<ApplicationState>::IsLayerPushed(Graphite::Core::Utils::UniqueID const& uid) const
 {
-    return std::find_if(m_layers.begin(), m_layers.end(), [layer_name](auto const& layer_ptr) {
-               return layer_ptr->GetName() == layer_name;
+    return std::find_if(m_layers.begin(), m_layers.end(), [uid](auto const& layer_ptr) {
+               return layer_ptr->GetUID() == uid;
            }) != m_layers.end();
+}
+
+template <typename ApplicationState>
+inline std::weak_ptr<ILayer<ApplicationState>> TGraphiteApplication<ApplicationState>::GetLayer(
+    Graphite::Core::Utils::UniqueID const& uid)
+{
+    auto it = std::find_if(m_layers.cbegin(), m_layers.cend(), [uid](auto const& layer_ptr) {
+        return layer_ptr->GetUID() == uid;
+    });
+
+    return it != m_layers.cend() ? *it : nullptr;
 }
 
 template <typename ApplicationState>
@@ -196,7 +217,5 @@ void TGraphiteApplication<ApplicationState>::RenderLayers()
         layer_ptr->OnRender();
     });
 }
-
-#pragma endregion Internals
 
 } // namespace Graphite::Core::Application

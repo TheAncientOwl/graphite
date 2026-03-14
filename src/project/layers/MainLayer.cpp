@@ -5,7 +5,7 @@
 ///
 /// @file MainLayer.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Implementation of @see MainLayer.hpp.
 ///
 
@@ -83,11 +83,12 @@ void MainLayer::OnRender()
     CleanupBanned();
     SavePlayers();
 
-    if (static_cast<bool>(app_state.selected_player) &&
-        !m_application->IsLayerPushed(PlayerEditLayer::GetLayerName()))
+    static auto s_edit_layer_uid{Graphite::Core::Utils::UniqueID::generate()};
+
+    if (static_cast<bool>(app_state.selected_player) && !m_application->IsLayerPushed(s_edit_layer_uid))
     {
         auto app_ptr_clone{m_application};
-        m_application->PushLayer<PlayerEditLayer>(std::move(app_ptr_clone));
+        m_application->PushLayer<PlayerEditLayer>(std::move(app_ptr_clone), s_edit_layer_uid);
     }
 }
 

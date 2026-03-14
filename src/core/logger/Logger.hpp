@@ -5,7 +5,7 @@
 ///
 /// @file Logger.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief Logging utilities
 ///
 
@@ -125,3 +125,17 @@ private:
     {                                                                    \
         std::format(fmt __VA_OPT__(, ) __VA_ARGS__), __PRETTY_FUNCTION__ \
     }
+
+// TODO: improve?
+#define GRAPHITE_ASSERT(condition, message)                                                \
+    do                                                                                     \
+    {                                                                                      \
+        if (!(condition))                                                                  \
+        {                                                                                  \
+            LOG_CRITICAL("Assertion failed: {} | Condition: {}", message, #condition);     \
+            std::cerr << std::endl                                                         \
+                      << "Assertion failed: " << message << " | Condition: " << #condition \
+                      << std::endl;                                                        \
+            std::abort();                                                                  \
+        }                                                                                  \
+    } while (0)

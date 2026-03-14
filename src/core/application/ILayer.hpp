@@ -5,7 +5,7 @@
 ///
 /// @file ILayer.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief App layer.
 ///
 
@@ -30,6 +30,12 @@ public:
     ILayer(std::shared_ptr<Graphite::Core::Application::TGraphiteApplication<ApplicationState>> application)
         : m_application{std::move(application)}
         , m_layer_uid{Graphite::Core::Utils::UniqueID::generate()} {};
+
+    ILayer(
+        std::shared_ptr<Graphite::Core::Application::TGraphiteApplication<ApplicationState>> application,
+        Graphite::Core::Utils::UniqueID uid)
+        : m_application{std::move(application)}, m_layer_uid{std::move(uid)} {};
+
     virtual ~ILayer() = default;
 
     inline Graphite::Core::Utils::UniqueID const& GetUID() const noexcept { return m_layer_uid; }

@@ -5,7 +5,7 @@
 ///
 /// @file PlayerEditLayer.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Edit Player data layer.
 ///
 
@@ -24,6 +24,10 @@ public:
     std::string_view GetName() const noexcept override;
 
     PlayerEditLayer(Graphite::Project::PlayersApplication::Ptr application);
+
+    PlayerEditLayer(
+        Graphite::Project::PlayersApplication::Ptr application,
+        Graphite::Core::Utils::UniqueID uid);
 
     void OnPush() override;
     void OnRender() override;
