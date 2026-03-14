@@ -1,4 +1,4 @@
-add_library(graphite_core_logger STATIC
+add_library(graphite_core_logger SHARED
     Logger.cpp
     Logger.hpp
     Ansi.cpp

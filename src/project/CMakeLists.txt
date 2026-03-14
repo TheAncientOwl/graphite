@@ -1,4 +1,4 @@
-add_library(graphite_project SHARED
+add_library(graphite_project STATIC
     PlayersApplication.cpp
     layers/MainLayer.cpp
     layers/PlayerEditLayer.cpp

@@ -3,7 +3,7 @@ set(LIB_COMMON_SOURCES
     DynamicLibrary.cpp
 )
 
-add_library(graphite_core_common STATIC ${LIB_COMMON_SOURCES})
+add_library(graphite_core_common SHARED ${LIB_COMMON_SOURCES})
 
 target_include_directories(graphite_core_common PUBLIC
     ${PROJECT_SOURCE_DIR}/src
