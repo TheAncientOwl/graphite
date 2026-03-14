@@ -30,7 +30,7 @@ else()
     )
 endif()
 
-add_library(graphite_core_renderer STATIC ${CORE_RENDERER_SOURCES})
+add_library(graphite_core_renderer SHARED ${CORE_RENDERER_SOURCES})
 
 target_include_directories(graphite_core_renderer PUBLIC
     ${GLFW_INCLUDE_DIRS}

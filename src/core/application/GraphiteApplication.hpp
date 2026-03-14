@@ -5,9 +5,11 @@
 ///
 /// @file GraphiteApplication.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Main application.
 ///
+
+#pragma once
 
 #include <algorithm>
 #include <concepts>
@@ -32,11 +34,22 @@ class GraphiteApplication
 {
 public:
     GraphiteApplication(WindowConfiguration window_configuration, ApplicationState initial_state);
+    virtual ~GraphiteApplication() = default;
 
 public:
+    void Run();
+
+private:
+    virtual void AppInit() = 0;
+
+protected:
     ApplicationState& GetApplicationState();
 
-    void Run();
+    template <typename LayerImpl, typename... Args>
+        requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
+            { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
+        }
+    LayerImpl& PushLayer(Args&&... args);
 
 private:
     void Init();
@@ -45,13 +58,6 @@ private:
 
     void RenderLayers();
     void ShutdownLayers();
-
-public:
-    template <typename LayerImpl, typename... Args>
-        requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
-            { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
-        }
-    LayerImpl& PushLayer(Args&&... args);
 
 protected:
     WindowConfiguration m_window_configuration{};
@@ -87,6 +93,8 @@ void GraphiteApplication<ApplicationState>::Init()
     LOG_SCOPE("");
     m_renderer = Graphite::Core::Renderer::CreateRenderer();
     m_renderer->Init();
+
+    AppInit();
 }
 
 template <typename ApplicationState>
@@ -131,7 +139,9 @@ void GraphiteApplication<ApplicationState>::RenderLayers()
 {
     LOG_SCOPE("");
     std::for_each(m_layers.begin(), m_layers.end(), [this](ILayer<ApplicationState>::Ptr& layer_ptr) {
+        layer_ptr->OnBeforeRender(m_app_state);
         layer_ptr->OnRender(m_app_state);
+        layer_ptr->OnAfterRender(m_app_state);
     });
 }
 

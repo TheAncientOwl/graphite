@@ -5,9 +5,11 @@
 ///
 /// @file WindowConfiguration.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief Configuration of graphite app window.
 ///
+
+#pragma once
 
 #include <cstdint>
 #include <string>

@@ -14,6 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(src/core)
 add_subdirectory(src/demo)
+add_subdirectory(src/project)
 
 # Create executable
 set(SOURCES
@@ -26,6 +27,7 @@ target_link_libraries(graphite PRIVATE
     graphite_core_renderer
     graphite_core_application
     graphite_demo
+    graphite_project
 )
 
 # Include directories

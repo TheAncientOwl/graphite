@@ -5,9 +5,11 @@
 ///
 /// @file ApplicationLayer.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.1
+/// @version 0.2
 /// @brief App layer.
 ///
+
+#pragma once
 
 #include <memory>
 #include <string_view>
@@ -25,7 +27,9 @@ public:
 
     virtual void OnPush(ApplicationState& app_state) = 0;
     virtual void OnPop(ApplicationState& app_state) = 0;
+    virtual void OnBeforeRender(ApplicationState& app_state) = 0;
     virtual void OnRender(ApplicationState& app_state) = 0;
+    virtual void OnAfterRender(ApplicationState& app_state) = 0;
     virtual void OnShutdown(ApplicationState& app_state) = 0;
     virtual ~ILayer() = default;
 };
