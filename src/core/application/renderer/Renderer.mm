@@ -12,7 +12,7 @@
 #ifdef GRAPHITE_USE_METAL_API
 #include "Renderer.hpp"
 
-#include "core/application/renderer/backends/metal/MetalRenderer.hpp"
+#include "Core/Application/Renderer/Backends/Metal/MetalRenderer.hpp"
 
 namespace Graphite::Core::Renderer {
 

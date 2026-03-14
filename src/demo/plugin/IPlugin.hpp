@@ -12,7 +12,7 @@
 #include <memory>
 #include <string_view>
 
-#include "core/plugin/GraphiteExport.hpp"
+#include "Core/plugin/GraphiteExport.hpp"
 
 namespace Graphite::Core::Plugin {
 

@@ -13,7 +13,7 @@
 #include <memory>
 
 #include "Renderer.hpp"
-#include "renderer/backends/vulkan/VulkanRenderer.hpp"
+#include "Renderer/Backends/Vulkan/VulkanRenderer.hpp"
 
 namespace Graphite::Core::Renderer {
 

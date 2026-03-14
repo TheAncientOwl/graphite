@@ -22,8 +22,8 @@
 
 #include "imgui/imgui.h"
 
-#include "core/logger/Logger.hpp"
-#include "core/renderer/Renderer.hpp"
+#include "Core/Logger/Logger.hpp"
+#include "Core/Renderer/Renderer.hpp"
 
 namespace Graphite::Demo {
 

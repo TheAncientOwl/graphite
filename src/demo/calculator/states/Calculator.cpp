@@ -14,7 +14,7 @@
 #include <stack>
 
 #include "Calculator.hpp"
-#include "core/logger/Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 #include "imgui/imgui.h"
 
 namespace Graphite::Demo::Calculator::States {

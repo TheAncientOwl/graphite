@@ -13,7 +13,7 @@
 
 #include <memory>
 
-#include "core/application/WindowConfiguration.hpp"
+#include "Core/Application/WindowConfiguration.hpp"
 
 namespace Graphite::Core::Renderer {
 

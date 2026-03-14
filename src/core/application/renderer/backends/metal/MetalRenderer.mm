@@ -11,15 +11,15 @@
 
 #include <exception>
 
+#include "Core/Application/WindowConfiguration.hpp"
 #include "Logger.hpp"
-#include "core/application/WindowConfiguration.hpp"
 
 #include "MetalRenderer.hpp"
 #include "MetalRendererState.mm"
 
 #include <stdio.h>
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_metal.h"
+#include "Backends/imgui_impl_glfw.h"
+#include "Backends/imgui_impl_metal.h"
 #include "imgui.h"
 
 #define GLFW_INCLUDE_NONE

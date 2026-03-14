@@ -9,7 +9,7 @@
 /// @brief Demo calculator app.
 ///
 
-#include "core/application/renderer/Renderer.hpp"
+#include "Core/Application/Renderer/Renderer.hpp"
 #include "demo/calculator/states/Calculator.hpp"
 
 #include "imgui/imgui.h"

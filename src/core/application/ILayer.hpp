@@ -14,7 +14,7 @@
 #include <memory>
 #include <string_view>
 
-#include "core/utils/UniqueID.hpp"
+#include "Core/Utils/UniqueID.hpp"
 
 namespace Graphite::Core::Application {
 

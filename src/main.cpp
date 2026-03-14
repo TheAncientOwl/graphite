@@ -14,7 +14,7 @@
 
 #include "imgui/imgui.h"
 
-#include "core/logger/Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 #include "project/PlayersApplication.hpp"
 
 int main()

@@ -13,7 +13,7 @@
 
 #include <exception>
 
-#include "core/logger/Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 
 namespace Graphite::Demo::Calculator {
 

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "core/application/ILayer.hpp"
+#include "Core/Application/ILayer.hpp"
 #include "project/AppState.hpp"
 #include "project/PlayersApplication.hpp"
 

@@ -14,11 +14,11 @@
 
 #include "imgui/imgui.h"
 
-#include "core/application/renderer/Renderer.hpp"
-#include "core/logger/Logger.hpp"
+#include "Core/Application/Renderer/Renderer.hpp"
+#include "Core/Logger/Logger.hpp"
 
-#include "core/plugin/DynamicLibrary.hpp"
-#include "core/plugin/IPlugin.hpp"
+#include "Core/plugin/DynamicLibrary.hpp"
+#include "Core/plugin/IPlugin.hpp"
 
 int main()
 {

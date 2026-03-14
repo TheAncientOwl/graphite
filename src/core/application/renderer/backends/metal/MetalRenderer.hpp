@@ -6,15 +6,15 @@
 /// @file MetalRenderer.hpp
 /// @author Alexandru Delegeanu
 /// @version 0.2
-/// @brief Metal implementation of @see core/Renderer.hpp.
-/// Adaptation of @see external/imgui/examples/example_glfw_metal/main.mm
+/// @brief Metal implementation of @see Core/Renderer.hpp.
+/// Adaptation of @see external/imgui/examples/example_glfw_Metal/main.mm
 ///
 
 #pragma once
 
 #include <memory>
 
-#include "core/application/renderer/Renderer.hpp"
+#include "Core/Application/Renderer/Renderer.hpp"
 
 namespace Graphite::Core::Renderer::Backends::Metal {
 

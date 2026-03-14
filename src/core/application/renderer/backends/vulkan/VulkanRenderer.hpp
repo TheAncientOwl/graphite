@@ -6,12 +6,12 @@
 /// @file VulkanRenderer.hpp
 /// @author Alexandru Delegeanu
 /// @version 0.1
-/// @brief Vulkan implementation of @see core/Renderer.hpp.
+/// @brief Vulkan implementation of @see Core/Renderer.hpp.
 ///
 
 #pragma once
 
-#include "core/renderer/Renderer.hpp"
+#include "Core/Renderer/Renderer.hpp"
 
 namespace Graphite::Core::Renderer::Backends::Vulkan {
 

@@ -18,11 +18,11 @@
 #include <utility>
 #include <vector>
 
-#include "core/logger/Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 
 #include "ILayer.hpp"
+#include "Renderer/Renderer.hpp"
 #include "WindowConfiguration.hpp"
-#include "renderer/Renderer.hpp"
 
 namespace Graphite::Core::Application {
 

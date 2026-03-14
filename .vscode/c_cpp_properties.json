@@ -5,7 +5,7 @@
       "defines": ["GRAPHITE_USE_METAL_API"],
       "includePath": [
         "${workspaceFolder}/src",
-        "${workspaceFolder}/src/core/application",
+        "${workspaceFolder}/src/Core/application",
 
         "${workspaceFolder}/external",
         "${workspaceFolder}/external/imgui",

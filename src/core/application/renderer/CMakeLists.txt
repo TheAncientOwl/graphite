@@ -11,17 +11,17 @@ set(CORE_RENDERER_SOURCES
 if(APPLE)
     list(APPEND CORE_RENDERER_SOURCES
         Renderer.mm
-        backends/metal/MetalRenderer.mm
-        backends/metal/MetalRendererState.mm
-        ${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp
-        ${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_metal.mm
+        Backends/Metal/MetalRenderer.mm
+        Backends/Metal/MetalRendererState.mm
+        ${PROJECT_SOURCE_DIR}/external/imgui/Backends/imgui_impl_glfw.cpp
+        ${PROJECT_SOURCE_DIR}/external/imgui/Backends/imgui_impl_metal.mm
     )
 
     # Set Objective-C++ compiler for Metal backend
     set_source_files_properties(
         Renderer.mm
-        backends/metal/MetalRenderer.mm
-        backends/metal/MetalRendererState.mm
+        Backends/Metal/MetalRenderer.mm
+        Backends/Metal/MetalRendererState.mm
         PROPERTIES LANGUAGE OBJCXX
     )
 else()
