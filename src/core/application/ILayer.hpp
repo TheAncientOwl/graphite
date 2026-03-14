@@ -14,7 +14,7 @@
 #include <memory>
 #include <string_view>
 
-#include "Core/Utils/UniqueID.hpp"
+#include "Core/Common/UniqueID.hpp"
 
 namespace Graphite::Core::Application {
 
@@ -29,16 +29,16 @@ public:
 
     ILayer(std::shared_ptr<Graphite::Core::Application::TGraphiteApplication<ApplicationState>> application)
         : m_application{std::move(application)}
-        , m_layer_uid{Graphite::Core::Utils::UniqueID::generate()} {};
+        , m_layer_uid{Graphite::Core::Common::UniqueID::generate()} {};
 
     ILayer(
         std::shared_ptr<Graphite::Core::Application::TGraphiteApplication<ApplicationState>> application,
-        Graphite::Core::Utils::UniqueID uid)
+        Graphite::Core::Common::UniqueID uid)
         : m_application{std::move(application)}, m_layer_uid{std::move(uid)} {};
 
     virtual ~ILayer() = default;
 
-    inline Graphite::Core::Utils::UniqueID const& GetUID() const noexcept { return m_layer_uid; }
+    inline Graphite::Core::Common::UniqueID const& GetUID() const noexcept { return m_layer_uid; }
 
 private:
     friend class Graphite::Core::Application::TGraphiteApplication<ApplicationState>;
@@ -51,7 +51,7 @@ private:
 
 protected:
     std::shared_ptr<TGraphiteApplication<ApplicationState>> m_application{nullptr};
-    Graphite::Core::Utils::UniqueID m_layer_uid{};
+    Graphite::Core::Common::UniqueID m_layer_uid{};
 };
 
 } // namespace Graphite::Core::Application

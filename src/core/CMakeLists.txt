@@ -1,4 +1,3 @@
-add_subdirectory(logger)
-add_subdirectory(LibUtils)
-add_subdirectory(utils)
-add_subdirectory(application)
+add_subdirectory(Logger)
+add_subdirectory(Common)
+add_subdirectory(Application)

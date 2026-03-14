@@ -52,14 +52,14 @@ public:
         requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
             { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
         }
-    Graphite::Core::Utils::UniqueID const& PushLayer(Args&&... args);
+    Graphite::Core::Common::UniqueID const& PushLayer(Args&&... args);
 
     void PopLayer();
 
-    void RemoveLayer(Graphite::Core::Utils::UniqueID const& uid);
-    bool IsLayerPushed(Graphite::Core::Utils::UniqueID const& uid) const;
-    std::weak_ptr<ILayer<ApplicationState>> GetLayer(Graphite::Core::Utils::UniqueID const& uid);
-    std::weak_ptr<ILayer<ApplicationState>> const GetLayer(Graphite::Core::Utils::UniqueID const& uid) const;
+    void RemoveLayer(Graphite::Core::Common::UniqueID const& uid);
+    bool IsLayerPushed(Graphite::Core::Common::UniqueID const& uid) const;
+    std::weak_ptr<ILayer<ApplicationState>> GetLayer(Graphite::Core::Common::UniqueID const& uid);
+    std::weak_ptr<ILayer<ApplicationState>> const GetLayer(Graphite::Core::Common::UniqueID const& uid) const;
 
 private:
     virtual void AppInit() = 0;
@@ -135,7 +135,7 @@ template <typename LayerImpl, typename... Args>
     requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
         { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
     }
-Graphite::Core::Utils::UniqueID const& TGraphiteApplication<ApplicationState>::PushLayer(Args&&... args)
+Graphite::Core::Common::UniqueID const& TGraphiteApplication<ApplicationState>::PushLayer(Args&&... args)
 {
     LOG_SCOPE("{}", LayerImpl::GetLayerName().data());
     auto layer = std::make_unique<LayerImpl>(std::forward<Args>(args)...);
@@ -167,7 +167,7 @@ void TGraphiteApplication<ApplicationState>::PopLayer()
 }
 
 template <typename ApplicationState>
-void TGraphiteApplication<ApplicationState>::RemoveLayer(Graphite::Core::Utils::UniqueID const& uid)
+void TGraphiteApplication<ApplicationState>::RemoveLayer(Graphite::Core::Common::UniqueID const& uid)
 {
     m_layers.erase(
         std::remove_if(
@@ -185,7 +185,7 @@ void TGraphiteApplication<ApplicationState>::RemoveLayer(Graphite::Core::Utils::
 }
 
 template <typename ApplicationState>
-bool TGraphiteApplication<ApplicationState>::IsLayerPushed(Graphite::Core::Utils::UniqueID const& uid) const
+bool TGraphiteApplication<ApplicationState>::IsLayerPushed(Graphite::Core::Common::UniqueID const& uid) const
 {
     return std::find_if(m_layers.begin(), m_layers.end(), [uid](auto const& layer_ptr) {
                return layer_ptr->GetUID() == uid;
@@ -194,7 +194,7 @@ bool TGraphiteApplication<ApplicationState>::IsLayerPushed(Graphite::Core::Utils
 
 template <typename ApplicationState>
 inline std::weak_ptr<ILayer<ApplicationState>> TGraphiteApplication<ApplicationState>::GetLayer(
-    Graphite::Core::Utils::UniqueID const& uid)
+    Graphite::Core::Common::UniqueID const& uid)
 {
     auto it = std::find_if(m_layers.cbegin(), m_layers.cend(), [uid](auto const& layer_ptr) {
         return layer_ptr->GetUID() == uid;

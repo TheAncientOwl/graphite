@@ -11,7 +11,7 @@
 
 #include "IPlugin.hpp"
 
-#include "Core/LibUtils/GraphiteExport.hpp"
+#include "Core/LibCommon/GraphiteExport.hpp"
 
 #include "Core/Logger/Logger.hpp"
 

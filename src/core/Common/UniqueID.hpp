@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace Graphite::Core::Utils {
+namespace Graphite::Core::Common {
 
 class UniqueID
 {
@@ -68,4 +68,4 @@ private: // fields
     bool m_initialized{false};
 };
 
-} // namespace Graphite::Core::Utils
+} // namespace Graphite::Core::Common

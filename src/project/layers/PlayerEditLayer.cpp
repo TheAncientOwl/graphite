@@ -28,7 +28,7 @@ PlayerEditLayer::PlayerEditLayer(Graphite::Project::PlayersApplication::Ptr appl
 
 PlayerEditLayer::PlayerEditLayer(
     Graphite::Project::PlayersApplication::Ptr application,
-    Graphite::Core::Utils::UniqueID uid)
+    Graphite::Core::Common::UniqueID uid)
     : ILayer{std::move(application), std::move(uid)}
 {
 }

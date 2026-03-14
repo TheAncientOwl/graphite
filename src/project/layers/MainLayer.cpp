@@ -83,7 +83,7 @@ void MainLayer::OnRender()
     CleanupBanned();
     SavePlayers();
 
-    static auto s_edit_layer_uid{Graphite::Core::Utils::UniqueID::generate()};
+    static auto s_edit_layer_uid{Graphite::Core::Common::UniqueID::generate()};
 
     if (static_cast<bool>(app_state.selected_player) && !m_application->IsLayerPushed(s_edit_layer_uid))
     {

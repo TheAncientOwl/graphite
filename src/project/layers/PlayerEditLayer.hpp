@@ -27,7 +27,7 @@ public:
 
     PlayerEditLayer(
         Graphite::Project::PlayersApplication::Ptr application,
-        Graphite::Core::Utils::UniqueID uid);
+        Graphite::Core::Common::UniqueID uid);
 
     void OnPush() override;
     void OnRender() override;
