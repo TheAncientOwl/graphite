@@ -5,7 +5,7 @@
 ///
 /// @file BasicTableApp.hpp
 /// @author Alexandru Delegeanu
-/// @version 0.14
+/// @version 0.15
 /// @brief Playground.
 ///
 
@@ -57,7 +57,7 @@ public:
 
         ImGui::Begin("Players", &m_state.show_players);
 
-        ImGui::Text("Server Status: Online");
+        ImGui::Text("Server Status: %zu Online", m_state.players.size());
         ImGui::Separator();
 
         RenderSearchFilter();
