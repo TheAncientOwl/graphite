@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.6
+/// @version 0.7
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -20,6 +20,8 @@ using namespace std::string_literals;
 
 namespace Graphite::Core::Logger {
 
+static std::mutex g_write_mutex;
+
 Logger& Logger::instance()
 {
     static Logger logger{};
@@ -33,10 +35,18 @@ void Logger::enqueue(LogMessage&& msg)
         return;
     }
 
+    try
     {
         std::lock_guard<std::mutex> lock(m_queue_mutex);
         m_queue.emplace(std::move(msg));
     }
+    catch (const std::system_error& e)
+    {
+        std::cerr << "Logger::enqueue - mutex lock failed: " << e.what()
+                  << " addr=" << &m_queue_mutex << " this=" << this << "\n";
+        std::terminate();
+    }
+
     m_cv.notify_one();
 }
 
@@ -54,15 +64,15 @@ std::filesystem::path Logger::GetLogFilePath()
 }
 
 Logger::Logger()
-    : m_running{true}
-    , m_worker{&Logger::processQueue, this}
-    , m_log_file{Logger::GetLogFilePath(), std::ios::trunc}
+    : m_running{true}, m_worker{}, m_log_file{Logger::GetLogFilePath(), std::ios::trunc}
 {
     if (!m_log_file.is_open())
     {
         LOG_CRITICAL("Warning: failed to open log file {}", GetLogFilePath().c_str());
         std::terminate();
     }
+
+    m_worker = std::thread(&Logger::processQueue, this);
 }
 
 void Logger::processQueue()
@@ -70,7 +80,16 @@ void Logger::processQueue()
     while (m_running)
     {
         std::unique_lock<std::mutex> lock(m_queue_mutex);
-        m_cv.wait(lock, [this] { return !m_queue.empty() || !m_running; });
+        try
+        {
+            m_cv.wait(lock, [this] { return !m_queue.empty() || !m_running; });
+        }
+        catch (const std::system_error& e)
+        {
+            std::cerr << "Logger::processQueue - condition_variable wait failed: " << e.what()
+                      << " m_queue_mutex=" << &m_queue_mutex << " this=" << this << "\n";
+            std::terminate();
+        }
 
         while (!m_queue.empty())
         {
@@ -121,36 +140,43 @@ void Logger::printMessage(const LogMessage& msg)
     auto const reset = "\033[97m";
     auto const sepColor = Formatter::getSeparatorColor();
 
-    // std::ostringstream oss;
-    static std::mutex write_mutex;
-    std::lock_guard<std::mutex> lock(write_mutex);
+    try
+    {
+        std::lock_guard<std::mutex> lock(g_write_mutex);
 
-    // clang-format off
-    std::cout 
-        << sepColor << "| " 
-        << levelColor << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
-        << sepColor << " | " 
-        << levelColor << std::setw(8) << std::setfill(' ') << std::right << Formatter::getLevelName(msg.level)
-        << sepColor << " | "
-        << levelColor;
+        // clang-format off
+        std::cout 
+            << sepColor << "| " 
+            << levelColor << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
+            << sepColor << " | " 
+            << levelColor << std::setw(8) << std::setfill(' ') << std::right << Formatter::getLevelName(msg.level)
+            << sepColor << " | "
+            << levelColor;
 
-    Formatter::formatScopeColored(std::cout, msg.scope, levelColor);
+        Formatter::formatScopeColored(std::cout, msg.scope, levelColor);
 
-    std::cout << sepColor << " » " << reset << msg.message << "\n";
+        std::cout << sepColor << " » " << reset << msg.message << "\n";
 
-    m_log_file
-        << "| " 
-        << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
-        << " | " 
-        << std::setw(8) << std::setfill(' ') << std::right << Formatter::getLevelName(msg.level)
-        << " | ";
+        m_log_file
+            << "| " 
+            << std::setfill('0') << std::setw(2) << hours << ":" << std::setw(2) << minutes << ":" << std::setw(2) << seconds << ":" << std::setw(3) << ms << ":" << std::setw(6) << ns
+            << " | " 
+            << std::setw(8) << std::setfill(' ') << std::right << Formatter::getLevelName(msg.level)
+            << " | ";
 
-    Formatter::formatScopePlain(m_log_file, msg.scope);
+        Formatter::formatScopePlain(m_log_file, msg.scope);
 
-    m_log_file << " » ";
-    Ansi::writeWithoutAnsi(m_log_file, msg.message);
-    m_log_file << "\n";
-    // clang-format on
+        m_log_file << " » ";
+        Ansi::writeWithoutAnsi(m_log_file, msg.message);
+        m_log_file << "\n";
+        // clang-format on
+    }
+    catch (const std::system_error& e)
+    {
+        std::cerr << "Logger::printMessage - write_mutex lock failed: " << e.what()
+                  << " addr=" << &g_write_mutex << " this=" << this << "\n";
+        std::terminate();
+    }
 }
 
 ScopeLogger::ScopeLogger(std::string_view const tag, std::string_view const scope)
