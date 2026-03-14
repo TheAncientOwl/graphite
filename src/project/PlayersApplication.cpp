@@ -44,7 +44,7 @@ void PlayersApplication::AppInit()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ApplyTheme();
 
-    PushLayer<Layers::MainLayer>();
+    PushLayer<Layers::MainLayer>(shared_from_this());
 }
 
 void PlayersApplication::LoadPlayers()

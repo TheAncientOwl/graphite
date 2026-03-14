@@ -20,30 +20,30 @@ class MainLayer : public Graphite::Core::Application::ILayer<AppState>
 {
 public:
     static std::string_view GetLayerName() noexcept;
-
-    MainLayer();
-
     std::string_view GetName() const noexcept override;
-    void OnPush(AppState& app_state) override;
-    void OnPop(AppState& app_state) override;
-    void OnBeforeRender(AppState& app_state) override;
-    void OnRender(AppState& app_state) override;
-    void OnAfterRender(AppState& app_state) override;
-    void OnShutdown(AppState& app_state) override;
+
+    MainLayer(Graphite::Project::PlayersApplication::Ptr application);
+
+    void OnPush() override;
+    void OnPop() override;
+    void OnBeforeRender() override;
+    void OnRender() override;
+    void OnAfterRender() override;
+    void OnShutdown() override;
 
 private:
-    void RenderPlayersSelect(AppState& app_state);
-    void RenderPlayersTable(AppState& app_state);
-    void RenderEditSelectedPlayer(AppState& app_state);
-    void RenderMenuBar(AppState& app_state);
-    void RenderSearchFilter(AppState& app_state);
+    void RenderPlayersSelect();
+    void RenderPlayersTable();
+    void RenderEditSelectedPlayer();
+    void RenderMenuBar();
+    void RenderSearchFilter();
 
 private:
-    void SavePlayers(AppState& app_state);
-    void CleanupBanned(AppState& app_state);
-    void SetEditPlayer(AppState& app_state, std::size_t const index);
-    bool NameMatchesSearch(AppState& app_state, std::string_view const name) const;
-    bool IsRenderable(AppState& app_state, Player const& player) const;
+    void SavePlayers();
+    void CleanupBanned();
+    void SetEditPlayer(std::size_t const index);
+    bool NameMatchesSearch(std::string_view const name) const;
+    bool IsRenderable(Player const& player) const;
 };
 
 } // namespace Graphite::Project::Layers

@@ -42,22 +42,25 @@ public:
             new ApplicationImpl(std::move(window_configuration), std::move(app_state)));
     }
 
-    virtual ~TGraphiteApplication() = default;
-
     void Run();
 
-private:
-    virtual void AppInit() = 0;
+    using Ptr = std::shared_ptr<TGraphiteApplication<ApplicationState>>;
 
-protected:
-    TGraphiteApplication(WindowConfiguration window_configuration, ApplicationState initial_state);
-    ApplicationState& GetApplicationState();
+    inline ApplicationState& GetApplicationState() noexcept;
 
     template <typename LayerImpl, typename... Args>
         requires std::derived_from<LayerImpl, ILayer<ApplicationState>> && requires {
             { LayerImpl::GetLayerName() } -> std::convertible_to<std::string_view>;
         }
     LayerImpl& PushLayer(Args&&... args);
+
+    void PopLayer();
+
+private:
+    virtual void AppInit() = 0;
+
+protected:
+    TGraphiteApplication(WindowConfiguration window_configuration, ApplicationState initial_state);
 
 private:
     void Init();
@@ -131,13 +134,22 @@ LayerImpl& TGraphiteApplication<ApplicationState>::PushLayer(Args&&... args)
 {
     LOG_SCOPE("{}", LayerImpl::GetLayerName().data());
     auto layer = std::make_unique<LayerImpl>(std::forward<Args>(args)...);
-    layer->OnPush(m_app_state);
+    layer->OnPush();
     m_layers.push_back(std::move(layer));
     return static_cast<LayerImpl&>(*m_layers.back());
 }
 
 template <typename ApplicationState>
-ApplicationState& TGraphiteApplication<ApplicationState>::GetApplicationState()
+void TGraphiteApplication<ApplicationState>::PopLayer() noexcept
+{
+    if (!m_layers.empty())
+    {
+        m_layers.pop_back();
+    }
+}
+
+template <typename ApplicationState>
+inline ApplicationState& TGraphiteApplication<ApplicationState>::GetApplicationState() noexcept
 {
     return m_app_state;
 }
@@ -147,9 +159,9 @@ void TGraphiteApplication<ApplicationState>::RenderLayers()
 {
     LOG_SCOPE("");
     std::for_each(m_layers.begin(), m_layers.end(), [this](ILayer<ApplicationState>::Ptr& layer_ptr) {
-        layer_ptr->OnBeforeRender(m_app_state);
-        layer_ptr->OnRender(m_app_state);
-        layer_ptr->OnAfterRender(m_app_state);
+        layer_ptr->OnBeforeRender();
+        layer_ptr->OnRender();
+        layer_ptr->OnAfterRender();
     });
 }
 
@@ -158,7 +170,7 @@ void TGraphiteApplication<ApplicationState>::ShutdownLayers()
 {
     LOG_SCOPE("");
     std::for_each(m_layers.begin(), m_layers.end(), [this](ILayer<ApplicationState>::Ptr& layer_ptr) {
-        layer_ptr->OnShutdown(m_app_state);
+        layer_ptr->OnShutdown();
     });
 }
 #pragma endregion Internals

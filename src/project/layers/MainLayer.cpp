@@ -26,38 +26,41 @@ std::string_view MainLayer::GetLayerName() noexcept
     return "MainLayer";
 }
 
-MainLayer::MainLayer()
+MainLayer::MainLayer(Graphite::Project::PlayersApplication::Ptr application)
+    : ILayer{std::move(application)}
 {
     LOG_SCOPE("");
-}
+};
 
 std::string_view MainLayer::GetName() const noexcept
 {
     return GetLayerName();
 }
 
-void MainLayer::OnPush(AppState& app_state)
+void MainLayer::OnPush()
 {
     LOG_SCOPE("");
 }
 
-void MainLayer::OnPop(AppState& app_state)
+void MainLayer::OnPop()
 {
     LOG_SCOPE("");
 }
 
-void MainLayer::OnBeforeRender(AppState& app_state)
+void MainLayer::OnBeforeRender()
 {
     LOG_SCOPE("");
 }
 
-void MainLayer::OnRender(AppState& app_state)
+void MainLayer::OnRender()
 {
     LOG_SCOPE("");
 
-    RenderMenuBar(app_state);
+    RenderMenuBar();
 
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_None);
+
+    auto& app_state{m_application->GetApplicationState()};
 
     if (!app_state.show_players)
     {
@@ -69,36 +72,38 @@ void MainLayer::OnRender(AppState& app_state)
     ImGui::Text("Server Status: %zu Online", app_state.players.size());
     ImGui::Separator();
 
-    RenderSearchFilter(app_state);
+    RenderSearchFilter();
     ImGui::Separator();
 
-    RenderPlayersSelect(app_state);
+    RenderPlayersSelect();
 
     ImGui::SameLine();
 
-    RenderPlayersTable(app_state);
+    RenderPlayersTable();
 
-    RenderEditSelectedPlayer(app_state);
+    RenderEditSelectedPlayer();
 
     ImGui::End();
 }
 
-void MainLayer::OnAfterRender(AppState& app_state)
+void MainLayer::OnAfterRender()
 {
     LOG_SCOPE("");
-    CleanupBanned(app_state);
-    SavePlayers(app_state);
+    CleanupBanned();
+    SavePlayers();
 }
 
-void MainLayer::OnShutdown(AppState& app_state)
+void MainLayer::OnShutdown()
 {
     LOG_SCOPE("");
-    SavePlayers(app_state);
+    SavePlayers();
 }
 
-void MainLayer::RenderPlayersSelect(AppState& app_state)
+void MainLayer::RenderPlayersSelect()
 {
     LOG_SCOPE("");
+    auto& app_state{m_application->GetApplicationState()};
+
     ImGui::BeginChild("LeftSidebar", ImVec2(80, 0), ImGuiChildFlags_Borders);
 
     ImGuiListClipper clipper{};
@@ -110,7 +115,7 @@ void MainLayer::RenderPlayersSelect(AppState& app_state)
         LOG_INFO("Rendering from {} to {}", clipper.DisplayStart, clipper.DisplayEnd);
         for (auto player_index = clipper.DisplayStart; player_index < clipper.DisplayEnd; ++player_index)
         {
-            if (!IsRenderable(app_state, app_state.players[player_index]))
+            if (!IsRenderable(app_state.players[player_index]))
             {
                 continue;
             }
@@ -121,7 +126,7 @@ void MainLayer::RenderPlayersSelect(AppState& app_state)
                  (static_cast<bool>(app_state.selected_player) &&
                   *app_state.selected_player != player_index)))
             {
-                SetEditPlayer(app_state, player_index);
+                SetEditPlayer(player_index);
             }
             ImGui::PopID();
 
@@ -174,9 +179,11 @@ void MainLayer::RenderPlayersSelect(AppState& app_state)
     ImGui::EndChild();
 }
 
-void MainLayer::RenderPlayersTable(AppState& app_state)
+void MainLayer::RenderPlayersTable()
 {
     LOG_SCOPE("");
+    auto& app_state{m_application->GetApplicationState()};
+
     // 1. Setup the table (3 columns)
     ImGui::BeginChild("TableRegion");
     if (ImGui::BeginTable(
@@ -247,7 +254,7 @@ void MainLayer::RenderPlayersTable(AppState& app_state)
             {
                 auto& player = app_state.players[player_index];
 
-                if (!IsRenderable(app_state, player))
+                if (!IsRenderable(player))
                 {
                     continue;
                 }
@@ -380,9 +387,11 @@ void MainLayer::RenderPlayersTable(AppState& app_state)
     ImGui::EndChild();
 }
 
-void MainLayer::RenderEditSelectedPlayer(AppState& app_state)
+void MainLayer::RenderEditSelectedPlayer()
 {
     LOG_SCOPE("");
+    auto& app_state{m_application->GetApplicationState()};
+
     if (!app_state.selected_player)
         return;
 
@@ -420,9 +429,12 @@ void MainLayer::RenderEditSelectedPlayer(AppState& app_state)
     ImGui::End();
 }
 
-void MainLayer::RenderMenuBar(AppState& app_state)
+void MainLayer::RenderMenuBar()
 {
     LOG_SCOPE("");
+
+    auto& app_state{m_application->GetApplicationState()};
+
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -433,7 +445,7 @@ void MainLayer::RenderMenuBar(AppState& app_state)
                 app_state.sorted_players_indices.push_back(app_state.players.size() - 1);
                 app_state.save_players_data = true;
                 app_state.reorder_players_data = true;
-                SetEditPlayer(app_state, app_state.players.size() - 1);
+                SetEditPlayer(app_state.players.size() - 1);
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit", "Alt+F4"))
@@ -466,16 +478,19 @@ void MainLayer::RenderMenuBar(AppState& app_state)
     }
 }
 
-void MainLayer::RenderSearchFilter(AppState& app_state)
+void MainLayer::RenderSearchFilter()
 {
     LOG_SCOPE("");
+
+    auto& app_state{m_application->GetApplicationState()};
+
     if (ImGui::InputText("Search Player", app_state.filter.buffer, sizeof(app_state.filter.buffer)))
     {
         app_state.filter.length = strlen(app_state.filter.buffer);
 
         if (static_cast<bool>(app_state.selected_player))
         {
-            if (!NameMatchesSearch(app_state, app_state.players[*app_state.selected_player].name))
+            if (!NameMatchesSearch(app_state.players[*app_state.selected_player].name))
             {
                 app_state.selected_player = std::nullopt;
             }
@@ -483,9 +498,10 @@ void MainLayer::RenderSearchFilter(AppState& app_state)
     }
 }
 
-void MainLayer::CleanupBanned(AppState& app_state)
+void MainLayer::CleanupBanned()
 {
     LOG_SCOPE("");
+    auto& app_state{m_application->GetApplicationState()};
 
     auto const initial_size{app_state.players.size()};
     // 1. If we have a selection, calculate the new index
@@ -531,9 +547,11 @@ void MainLayer::CleanupBanned(AppState& app_state)
     }
 }
 
-void MainLayer::SavePlayers(AppState& app_state)
+void MainLayer::SavePlayers()
 {
     LOG_TRACE("");
+    auto& app_state{m_application->GetApplicationState()};
+
     if (!app_state.save_players_data)
     {
         return;
@@ -550,8 +568,10 @@ void MainLayer::SavePlayers(AppState& app_state)
     app_state.save_players_data = false;
 }
 
-void MainLayer::SetEditPlayer(AppState& app_state, std::size_t const index)
+void MainLayer::SetEditPlayer(std::size_t const index)
 {
+    auto& app_state{m_application->GetApplicationState()};
+
     app_state.selected_player = index;
 
     strncpy(
@@ -560,14 +580,15 @@ void MainLayer::SetEditPlayer(AppState& app_state, std::size_t const index)
     app_state.edits.health = app_state.players[index].health;
 }
 
-bool MainLayer::NameMatchesSearch(AppState& app_state, std::string_view const name) const
+bool MainLayer::NameMatchesSearch(std::string_view const name) const
 {
+    auto& app_state{m_application->GetApplicationState()};
     return app_state.filter.length == 0 || name.contains(app_state.filter.buffer);
 }
 
-bool MainLayer::IsRenderable(AppState& app_state, Player const& player) const
+bool MainLayer::IsRenderable(Player const& player) const
 {
-    return !player.banned && NameMatchesSearch(app_state, player.name);
+    return !player.banned && NameMatchesSearch(player.name);
 }
 
 } // namespace Graphite::Project::Layers
