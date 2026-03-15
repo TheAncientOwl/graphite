@@ -60,3 +60,11 @@ add_custom_command(TARGET graphite POST_BUILD
     ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:graphite>/assets
     COMMENT "Copying assets folder to build directory"
 )
+
+add_custom_target(copy_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets
+    ${CMAKE_BINARY_DIR}/assets
+)
+
+add_dependencies(graphite copy_assets)
