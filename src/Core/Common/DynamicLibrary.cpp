@@ -1,7 +1,7 @@
 /// --------------------------------------------------------------------------
-///                     Copyright (c) by ImGui-Lab 2026
+///                     Copyright (c) by Graphite 2026
 /// --------------------------------------------------------------------------
-/// @license https://github.com/TheAncientOwl/imgui-lab/blob/main/LICENSE
+/// @license https://github.com/TheAncientOwl/graphite/blob/main/LICENSE
 ///
 /// @file DynamicLibrary.cpp
 /// @author Alexandru Delegeanu

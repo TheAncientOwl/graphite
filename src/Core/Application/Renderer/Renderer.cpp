@@ -1,7 +1,7 @@
 /// --------------------------------------------------------------------------
-///                     Copyright (c) by ImGui-Lab 2026
+///                     Copyright (c) by Graphite 2026
 /// --------------------------------------------------------------------------
-/// @license https://github.com/TheAncientOwl/imgui-lab/blob/main/LICENSE
+/// @license https://github.com/TheAncientOwl/graphite/blob/main/LICENSE
 ///
 /// @file Renderer.cpp
 /// @author Alexandru Delegeanu
@@ -12,8 +12,8 @@
 #ifdef GRAPHITE_USE_VULKAN_API
 #include <memory>
 
-#include "Renderer.hpp"
 #include "Backends/Vulkan/VulkanRenderer.hpp"
+#include "Renderer.hpp"
 
 namespace Graphite::Core::Renderer {
 
