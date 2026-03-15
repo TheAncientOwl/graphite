@@ -5,12 +5,13 @@
 ///
 /// @file MainLayer.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.3
+/// @version 0.4
 /// @brief Implementation of @see MainLayer.hpp.
 ///
 
 #include <numeric>
 #include <unordered_set>
+#include <vector>
 
 #include "MainLayer.hpp"
 #include "PlayerEditLayer.hpp"
@@ -99,37 +100,41 @@ void MainLayer::RenderPlayersSelect()
 
     ImGui::BeginChild("LeftSidebar", ImVec2(80, 0), ImGuiChildFlags_Borders);
 
+    std::vector<std::size_t> visible_indices;
+    visible_indices.reserve(app_state.sorted_players_indices.size());
+    for (std::size_t i : app_state.sorted_players_indices)
+    {
+        if (IsRenderable(app_state.players[i]))
+            visible_indices.push_back(i);
+    }
+
     ImGuiListClipper clipper{};
-    clipper.Begin(static_cast<int>(app_state.sorted_players_indices.size()));
+    clipper.Begin(static_cast<int>(visible_indices.size()));
 
     while (clipper.Step())
     {
-        // for (std::size_t player_index = 0; player_index < app_state.players.size(); player_index++)
         LOG_INFO("Rendering from {} to {}", clipper.DisplayStart, clipper.DisplayEnd);
         for (auto player_index = clipper.DisplayStart; player_index < clipper.DisplayEnd; ++player_index)
         {
-            if (!IsRenderable(app_state.players[player_index]))
-            {
-                continue;
-            }
+            const std::size_t idx = visible_indices[player_index];
+            const auto& player = app_state.players[idx];
 
-            ImGui::PushID(player_index);
-            if (ImGui::Selectable(app_state.players[player_index].name.c_str()) &&
+            ImGui::PushID(idx);
+            if (ImGui::Selectable(player.name.c_str()) &&
                 (!static_cast<bool>(app_state.selected_player) ||
-                 (static_cast<bool>(app_state.selected_player) &&
-                  *app_state.selected_player != player_index)))
+                 (static_cast<bool>(app_state.selected_player) && *app_state.selected_player != idx)))
             {
-                SetEditPlayer(player_index);
+                SetEditPlayer(idx);
             }
             ImGui::PopID();
 
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
             {
                 // 1. Attach the payload identifier ("DND_PLAYER") and data
-                ImGui::SetDragDropPayload("DND_PLAYER", &player_index, sizeof(std::size_t));
+                ImGui::SetDragDropPayload("DND_PLAYER", &idx, sizeof(std::size_t));
 
                 // 2. Display a helpful tooltip while dragging
-                ImGui::Text("%s", app_state.players[player_index].name.c_str());
+                ImGui::Text("%s", player.name.c_str());
 
                 ImGui::EndDragDropSource();
             }
@@ -140,7 +145,7 @@ void MainLayer::RenderPlayersSelect()
                 {
                     LOG_SCOPE("Move player with D&D");
                     auto const source_display_idx = *(const std::size_t*)payload->Data;
-                    auto const target_display_idx = player_index;
+                    auto const target_display_idx = idx;
                     LOG_INFO(
                         "Move player: {} before player {}",
                         app_state.players[source_display_idx].name,
@@ -234,23 +239,26 @@ void MainLayer::RenderPlayersTable()
         // 3. Populate Rows
         std::unordered_set<std::size_t> banned_indices{};
 
+        std::vector<std::size_t> visible_indices;
+        visible_indices.reserve(app_state.sorted_players_indices.size());
+        for (std::size_t i : app_state.sorted_players_indices)
+        {
+            if (IsRenderable(app_state.players[i]))
+                visible_indices.push_back(i);
+        }
+
         ImGuiListClipper clipper{};
-        clipper.Begin(static_cast<int>(app_state.sorted_players_indices.size()));
+        clipper.Begin(static_cast<int>(visible_indices.size()));
 
         while (clipper.Step())
         {
             LOG_INFO("Rendering from {} to {}", clipper.DisplayStart, clipper.DisplayEnd);
 
-            // for (auto player_index : app_state.sorted_players_indices)
             for (auto player_index = clipper.DisplayStart; player_index < clipper.DisplayEnd;
                  ++player_index)
             {
-                auto& player = app_state.players[player_index];
-
-                if (!IsRenderable(player))
-                {
-                    continue;
-                }
+                const std::size_t idx = visible_indices[player_index];
+                auto& player = app_state.players[idx];
 
                 ImGui::TableNextRow();
 
@@ -262,7 +270,7 @@ void MainLayer::RenderPlayersTable()
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("%d HP", player.health);
 
-                ImGui::PushID(player_index); // Important for button uniqueness!
+                ImGui::PushID(idx); // Important for button uniqueness!
                 // Column 2: Action [-]
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.0f, 0.0f, 0.0f, 1.0f}); // text color
 
@@ -314,7 +322,7 @@ void MainLayer::RenderPlayersTable()
                 if (ImGui::Button("Ban"))
                 {
                     app_state.open_ban_modal = true;
-                    app_state.target_ban_player = player_index;
+                    app_state.target_ban_player = idx;
                 }
                 ImGui::PopStyleColor(2); // ban button
 
