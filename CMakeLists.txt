@@ -1,8 +1,19 @@
 cmake_minimum_required(VERSION 3.25)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
 if(APPLE)
     project(Graphite LANGUAGES C CXX OBJC OBJCXX)
-    set(CMAKE_C_COMPILER clang)
-    set(CMAKE_CXX_COMPILER clang++)
+
+    find_program(CLANG_PATH clang)
+    find_program(CLANGXX_PATH clang++)
+
+    if(CLANG_PATH AND CLANGXX_PATH)
+        set(CMAKE_C_COMPILER ${CLANG_PATH} CACHE FILEPATH "Use Apple Clang for C" FORCE)
+        set(CMAKE_CXX_COMPILER ${CLANGXX_PATH} CACHE FILEPATH "Use Apple Clang for C++" FORCE)
+    endif()
 else()
     project(Graphite LANGUAGES C CXX)
 endif()
