@@ -118,10 +118,10 @@ Graphite is not intended to be a full engine for now. Instead, it focuses on:
 
 ## Gallery
 
-<img src="demo/1.project.png" alias="Initial View" width="300px"/>
-<img src="demo/3.project-ban-player-1.png" alias="Ban Player" width="300px"/>
-<img src="demo/2.project-new-player-1.png" alias="Add Player Menu" width="300px"/>
-<img src="demo/2.project-new-player-2.png" alias="Add Player Layer" width="300px"/>
+<img src="demo/1.project.png" alias="Initial View" width="400px"/>
+<img src="demo/3.project-ban-player-1.png" alias="Ban Player" width="400px"/>
+<img src="demo/2.project-new-player-1.png" alias="Add Player Menu" width="400px"/>
+<img src="demo/2.project-new-player-2.png" alias="Add Player Layer" width="400px"/>
 
 ## License
 
