@@ -12,7 +12,7 @@
 #include <exception>
 
 #include "Core/Application/WindowConfiguration.hpp"
-#include "Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 
 #include "MetalRenderer.hpp"
 #include "MetalRendererState.mm"

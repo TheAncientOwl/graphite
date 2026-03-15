@@ -10,16 +10,15 @@
 ///
 
 #include "VulkanRenderer.hpp"
-#include "Logger.hpp"
+#include "Core/Logger/Logger.hpp"
 
 #include <exception>
-
-USE_LOG_TAG(Graphite::Core::Renderer::Backends::Vulkan);
 
 namespace Graphite::Core::Renderer::Backends::Vulkan {
 
 VulkanRenderer::VulkanRenderer()
 {
+    LOG_SCOPE("");
     LOG_CRITICAL(">> VulkanRenderer constructed");
     LOG_CRITICAL(">> Not supported yet, terminating the program");
     std::terminate();
@@ -30,7 +29,7 @@ VulkanRenderer::~VulkanRenderer()
     Cleanup();
 }
 
-void VulkanRenderer::Init()
+void VulkanRenderer::Init(Graphite::Core::Application::WindowConfiguration const& window_configuration)
 {
 }
 

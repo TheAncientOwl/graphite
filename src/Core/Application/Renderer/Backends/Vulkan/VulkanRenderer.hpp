@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Core/Renderer/Renderer.hpp"
+#include "Core/Application/Renderer/Renderer.hpp"
 
 namespace Graphite::Core::Renderer::Backends::Vulkan {
 
@@ -21,7 +21,7 @@ public:
     VulkanRenderer();
     ~VulkanRenderer() override;
 
-    void Init() override;
+    void Init(Graphite::Core::Application::WindowConfiguration const& window_configuration) override;
     void Render(std::shared_ptr<IRenderable> user_interface) override;
     void Cleanup() override;
 };

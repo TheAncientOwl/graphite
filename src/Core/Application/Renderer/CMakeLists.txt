@@ -27,6 +27,7 @@ if(APPLE)
 else()
     list(APPEND CORE_RENDERER_SOURCES
         Renderer.cpp
+        Backends/Vulkan/VulkanRenderer.cpp
     )
 endif()
 

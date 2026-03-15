@@ -1,4 +1,4 @@
-add_subdirectory(renderer)
+add_subdirectory(Renderer)
 
 add_library(graphite_core_application INTERFACE)
 
