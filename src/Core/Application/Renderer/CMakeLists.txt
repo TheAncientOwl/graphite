@@ -13,8 +13,8 @@ if(APPLE)
         Renderer.mm
         Backends/Metal/MetalRenderer.mm
         Backends/Metal/MetalRendererState.mm
-        ${PROJECT_SOURCE_DIR}/external/imgui/Backends/imgui_impl_glfw.cpp
-        ${PROJECT_SOURCE_DIR}/external/imgui/Backends/imgui_impl_metal.mm
+        ${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp
+        ${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_metal.mm
     )
 
     # Set Objective-C++ compiler for Metal backend
@@ -28,6 +28,9 @@ else()
     list(APPEND CORE_RENDERER_SOURCES
         Renderer.cpp
         Backends/Vulkan/VulkanRenderer.cpp
+        ${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp
+        ${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_vulkan.cpp
+        ${PROJECT_SOURCE_DIR}/external/imgui/imgui_demo.cpp
     )
 endif()
 
@@ -72,5 +75,7 @@ if(APPLE)
         ${QUARTZCORE_LIBRARY}
     )
 else()
-    target_link_libraries(graphite_core_renderer PRIVATE glfw)
+    find_package(Vulkan REQUIRED)
+    target_include_directories(graphite_core_renderer PUBLIC ${Vulkan_INCLUDE_DIRS})
+    target_link_libraries(graphite_core_renderer PRIVATE glfw Vulkan::Vulkan)
 endif()
