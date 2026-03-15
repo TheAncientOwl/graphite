@@ -5,7 +5,7 @@
 ///
 /// @file VulkanRenderer.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.2
+/// @version 0.3
 /// @brief Implementation of @see VulkanRenderer.hpp.
 ///
 
@@ -421,7 +421,11 @@ void VulkanRenderer::Init(Graphite::Core::Application::WindowConfiguration const
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
+    {
+        std::cerr << "::Graphite::Core::Application::Renderer::Backends::Vulkan::Vulkan(): "
+                     "[Critical] could not init glfw";
         std::terminate();
+    }
 
     // Create window with Vulkan context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

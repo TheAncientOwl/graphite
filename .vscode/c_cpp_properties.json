@@ -29,6 +29,21 @@
       ],
       "intelliSenseMode": "gcc-x64",
       "compilerPath": "/usr/bin/gcc"
+    },
+    {
+      "name": "Windows",
+      "defines": ["GRAPHITE_USE_VULKAN_API", "_WINDOWS"],
+      "includePath": [
+        "${workspaceFolder}/src",
+        "${workspaceFolder}/src/Core/Application",
+        "${workspaceFolder}/external",
+        "${workspaceFolder}/external/imgui",
+        "${workspaceFolder}/external/imgui/backends",
+        "D:/msys64/mingw64/include",
+        "D:/msys64/mingw64/include/c++/15.2.0"
+      ],
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "D:/msys64/mingw64/bin/g++.exe"
     }
   ],
   "version": 4

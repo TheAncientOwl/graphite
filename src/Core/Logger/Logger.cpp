@@ -5,7 +5,7 @@
 ///
 /// @file Logger.cpp
 /// @author Alexandru Delegeanu
-/// @version 0.8
+/// @version 0.9
 /// @brief Implementation of @see Logger.hpp.
 ///
 
@@ -68,7 +68,8 @@ Logger::Logger()
 {
     if (!m_log_file.is_open())
     {
-        LOG_CRITICAL("Warning: failed to open log file {}", GetLogFilePath().c_str());
+        std::cerr << "::Graphite::Core::Logger::Logger(): [Critical] failed to open log file: "
+                  << GetLogFilePath().string();
         std::terminate();
     }
 

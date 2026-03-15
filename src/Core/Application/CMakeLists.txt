@@ -2,6 +2,12 @@ add_subdirectory(Renderer)
 
 add_library(graphite_core_application INTERFACE)
 
+set_target_properties(graphite_core_application PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
+
 target_sources(graphite_core_application
     INTERFACE
         FILE_SET HEADERS

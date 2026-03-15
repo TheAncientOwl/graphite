@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.25)
-project(graphite LANGUAGES C CXX OBJC OBJCXX)
-
-# Platform specific compiler
 if(APPLE)
+    project(Graphite LANGUAGES C CXX OBJC OBJCXX)
     set(CMAKE_C_COMPILER clang)
     set(CMAKE_CXX_COMPILER clang++)
+else()
+    project(Graphite LANGUAGES C CXX)
 endif()
 
 # C++ version
@@ -22,6 +22,13 @@ set(SOURCES
 )
 
 add_executable(graphite ${SOURCES})
+
+set_target_properties(graphite PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
+
 target_link_libraries(graphite PRIVATE
     graphite_core_logger
     graphite_core_renderer
